@@ -9,256 +9,161 @@
     :root{
       --bg1:#77fdf5; --bg2:#86a8e7; --bg3:#91eae4;
       --ink:#2e2e2e; --muted:#666; --brand:#00cfff;
-      --pill:#a076f9; --line:#e6e6e6; --ok:#17a34a; --warn:#e11d48;
+      --pill:#a076f9; --line:#e6e6e6; --warn:#e11d48;
     }
-    *{box-sizing:border-box}
-    body{
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      margin:0; padding:40px; display:flex; justify-content:center;
-      background:linear-gradient(to right,var(--bg1),var(--bg2),var(--bg3));
-    }
-    .container{
-      width:100%; max-width:720px; background:#fff; border-radius:16px;
-      padding:32px 40px; box-shadow:0 8px 24px rgba(0,0,0,.1)
-    }
-    h1{margin:0 0 4px; text-align:center; color:var(--ink)}
-    .subtitle{margin:0 0 24px; text-align:center; color:var(--muted); font-size:.95rem}
-    .section-title{margin:24px 0 8px; font-weight:600; color:var(--ink)}
-    .info-pill,.output-pill{
-      background:var(--pill); color:#fff; border-radius:10px;
-      padding:10px 14px; font-weight:600; margin:12px 0 20px;
-    }
+    body{font-family:Inter,sans-serif;margin:0;padding:40px;display:flex;justify-content:center;
+      background:linear-gradient(to right,var(--bg1),var(--bg2),var(--bg3))}
+    .container{width:100%;max-width:720px;background:#fff;border-radius:16px;padding:32px 40px;
+      box-shadow:0 8px 24px rgba(0,0,0,.1)}
+    h1{text-align:center;margin:0 0 4px;color:var(--ink)}
+    .subtitle{text-align:center;color:var(--muted);margin:0 0 24px}
+    .section-title{margin:24px 0 8px;font-weight:600;color:var(--ink)}
+    .info-pill{background:var(--pill);color:#fff;border-radius:10px;padding:14px;font-weight:600;margin:16px 0}
+    .info-pill .kv{display:flex;justify-content:space-between;padding:4px 0}
     .form-group{margin:12px 0 18px}
-    label{display:block; font-weight:600; margin:0 0 8px}
-    input[type="text"], input[type="number"]{
-      width:100%; padding:10px 12px; border:1px solid #ccc; border-radius:8px; font-size:14px;
-    }
-    .hint{color:var(--muted); font-size:.9rem; margin-top:6px}
-    .checkbox-row{display:flex; align-items:center; gap:10px; margin:8px 0}
-    .subcard{
-      border:1px solid var(--line); border-radius:12px; padding:12px; margin:10px 0 8px;
-      background:#fafafa;
-    }
-    .radio-row{display:flex; flex-wrap:wrap; gap:14px; margin:8px 0}
-    .summary{
-      border:1px dashed var(--line); border-radius:12px; padding:12px; margin:14px 0;
-      background:#fcfcff; font-size:.95rem;
-    }
-    .summary .kv{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line)}
-    .summary .kv:last-child{border-bottom:0}
-    .pill-note{font-weight:600; color:var(--ok); font-size:.92rem}
-    .error{color:var(--warn); font-size:.92rem; margin-top:6px}
-    .submit{
-      width:100%; padding:14px 16px; font-weight:700; border:0; border-radius:10px;
-      background:var(--brand); color:#fff; cursor:pointer; font-size:16px; margin-top:14px;
-    }
-    .row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    @media (max-width:640px){ .row-2{grid-template-columns:1fr} }
+    label{display:block;font-weight:600;margin:0 0 8px}
+    input[type="text"],input[type="number"]{width:100%;padding:10px 12px;border:1px solid #ccc;border-radius:8px}
+    .checkbox-row{display:flex;align-items:center;gap:10px;margin:8px 0}
+    .subcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0 8px;background:#fafafa}
+    .radio-row{display:flex;gap:14px;margin:8px 0;flex-wrap:wrap}
+    .hint{font-size:.9rem;color:var(--muted);margin-top:6px}
+    .error{color:var(--warn);font-size:.9rem;margin-top:6px}
+    .submit{width:100%;padding:14px;border:0;border-radius:10px;background:var(--brand);color:#fff;
+      font-weight:700;font-size:16px;cursor:pointer;margin-top:14px}
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Solar Pre-Approval Form</h1>
-    <p class="subtitle">DER Upgrade Demo</p>
+    <h1>SPA Upgrade Application</h1>
+    <p class="subtitle">DER Upgrade - V2G & Capacity Logic Demo</p>
 
     <div class="form-group">
       <label for="nmi">Enter your NMI</label>
-      <input type="text" id="nmi" inputmode="numeric" placeholder="1234567891"/>
+      <input type="text" id="nmi" placeholder="1234567891"/>
       <div class="hint">You can find your NMI on your electricity bill.</div>
     </div>
 
-    <div id="approvedPill" class="info-pill">Existing Site Capacity: <span id="approvedKwLabel">5.0</span> kW (from DERR data)</div>
-
-    <div class="section-title">Installation Details</div>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="chkInverter"/>
-      <label for="chkInverter">Inverter</label>
-    </div>
-    <div id="inverterCard" class="subcard" style="display:none">
-      <div class="radio-row">
-        <label><input type="radio" name="invMode" value="add"> Adding</label>
-        <label><input type="radio" name="invMode" value="replace"> Replacing</label>
-      </div>
-      <div id="invAdd" class="row-2" style="display:none">
-        <div class="form-group">
-          <label for="invAddKw">Additional inverter capacity to add (kW)</label>
-          <input type="number" id="invAddKw" min="0" step="0.1" placeholder="e.g. 5.0"/>
-        </div>
-      </div>
-      <div id="invReplace" style="display:none">
-        <div class="form-group">
-          <label for="invNewKw">New inverter total size (kW)</label>
-          <input type="number" id="invNewKw" min="0" step="0.1" placeholder="e.g. 7.5"/>
-          <div class="hint">Enter the full capacity of the new inverter (this replaces the old one).</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="chkPanels"/>
-      <label for="chkPanels">Panels</label>
-    </div>
-    <div id="panelsCard" class="subcard" style="display:none">
-      <span class="pill-note">Added. No additional AC capacity required.</span>
-    </div>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="chkBattery"/>
-      <label for="chkBattery">Battery</label>
-    </div>
-    <div id="batteryCard" class="subcard" style="display:none">
-      <div class="hint">Does not change site AC capacity. Configure export below if relevant.</div>
-    </div>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="chkEV"/>
-      <label for="chkEV">EV Charger</label>
-    </div>
-    <div id="evCard" class="subcard" style="display:none">
-      <div class="hint">Does not change site AC capacity. Configure export below if relevant.</div>
-    </div>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="chkExportOnly"/>
-      <label for="chkExportOnly">Export Increase Only</label>
-    </div>
-    <div id="exportOnlyCard" class="subcard" style="display:none">
-      <div class="hint">No equipment changes. You are only requesting an export change.</div>
-    </div>
-
-    <div class="summary">
+    <div class="info-pill">
       <div class="kv"><span>Existing approved capacity</span><strong><span id="sumApproved">5.0</span> kW</strong></div>
       <div class="kv"><span>Change from this application</span><strong><span id="sumDelta">+0.0</span> kW</strong></div>
       <div class="kv"><span>Proposed total site AC capacity</span><strong><span id="sumProposed">5.0</span> kW</strong></div>
     </div>
 
+    <div class="section-title">Installation Details</div>
+
+    <!-- Inverter -->
+    <div class="checkbox-row"><input type="checkbox" id="chkInverter"/><label for="chkInverter">Inverter</label></div>
+    <div id="inverterCard" class="subcard" style="display:none">
+      <div class="radio-row">
+        <label><input type="radio" name="invMode" value="add"> Adding</label>
+        <label><input type="radio" name="invMode" value="replace"> Replacing</label>
+      </div>
+      <div id="invAdd" style="display:none">
+        <label>Additional inverter capacity (kW)</label>
+        <input type="number" id="invAddKw" min="0" step="0.1"/>
+      </div>
+      <div id="invReplace" style="display:none">
+        <label>New inverter total size (kW)</label>
+        <input type="number" id="invNewKw" min="0" step="0.1"/>
+      </div>
+    </div>
+
+    <!-- Panels -->
+    <div class="checkbox-row"><input type="checkbox" id="chkPanels"/><label for="chkPanels">Panels</label></div>
+    <div id="panelsCard" class="subcard" style="display:none">
+      <div class="hint">Added. No additional AC capacity required.</div>
+    </div>
+
+    <!-- Battery -->
+    <div class="checkbox-row"><input type="checkbox" id="chkBattery"/><label for="chkBattery">Battery</label></div>
+    <div id="batteryCard" class="subcard" style="display:none">
+      <div class="radio-row">
+        <label><input type="radio" name="batType" value="dc"> DC Battery</label>
+        <label><input type="radio" name="batType" value="ac"> AC Battery</label>
+      </div>
+      <div id="acBatteryOptions" style="display:none">
+        <div class="radio-row">
+          <label><input type="radio" name="batMode" value="add"> Adding</label>
+          <label><input type="radio" name="batMode" value="replace"> Replacing</label>
+        </div>
+        <div id="batAdd" style="display:none">
+          <label>Additional AC battery capacity (kW)</label>
+          <input type="number" id="batAddKw" min="0" step="0.1"/>
+        </div>
+        <div id="batReplace" style="display:none">
+          <label>New AC battery total size (kW)</label>
+          <input type="number" id="batNewKw" min="0" step="0.1"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- EV Charger -->
+    <div class="checkbox-row"><input type="checkbox" id="chkEV"/><label for="chkEV">EV Charger</label></div>
+    <div id="evCard" class="subcard" style="display:none">
+      <div class="radio-row">
+        <label><input type="radio" name="evMode" value="add"> Adding</label>
+        <label><input type="radio" name="evMode" value="replace"> Replacing</label>
+      </div>
+      <div id="evAdd" style="display:none">
+        <label>Additional EV charger capacity (kW)</label>
+        <input type="number" id="evAddKw" min="0" step="0.1"/>
+      </div>
+      <div id="evReplace" style="display:none">
+        <label>New EV charger total size (kW)</label>
+        <input type="number" id="evNewKw" min="0" step="0.1"/>
+      </div>
+    </div>
+
+    <!-- Export only -->
+    <div class="checkbox-row"><input type="checkbox" id="chkExportOnly"/><label for="chkExportOnly">Export Increase Only</label></div>
+    <div id="exportOnlyCard" class="subcard" style="display:none">
+      <div class="hint">No equipment changes. You are only requesting an export change.</div>
+    </div>
+
     <div class="section-title">Export Details</div>
     <div class="form-group">
       <label for="currentExport">Current export (kW)</label>
-      <input type="text" id="currentExport" placeholder="Auto from DERR, 0 kW if none" disabled/>
+      <input type="text" id="currentExport" disabled/>
     </div>
     <div class="form-group">
       <label for="requestedExport">Requested export limit (kW)</label>
-      <input type="number" id="requestedExport" min="0" step="0.1" placeholder="Enter kW"/>
-      <div class="hint">Enter the maximum kW you would like this site to export to the grid.</div>
+      <input type="number" id="requestedExport" min="0" step="0.1"/>
+      <div class="hint">Enter the maximum kW you would like this site to export.</div>
       <div id="exportError" class="error" style="display:none"></div>
     </div>
 
-    <div class="output-pill">Total Site AC Capacity: <span id="totalCapacityLabel">5.0</span> kW (auto-calculated)</div>
     <button id="submitBtn" class="submit">Submit Application</button>
   </div>
 
   <script>
-    const derrDB = {
-      "1234567891": { approvedKW: 5.0, currentExportKW: 0.0 },
-      "6201601234": { approvedKW: 7.5, currentExportKW: 5.0 }
-    };
+    const derrDB={"1234567891":{approvedKW:5,currentExportKW:0},"6201601234":{approvedKW:7.5,currentExportKW:5}};
+    let approvedKW=5,currentExportKW=0;
 
-    const nmiEl=document.getElementById('nmi');
-    const approvedPill=document.getElementById('approvedKwLabel');
-    const totalCapacityLabel=document.getElementById('totalCapacityLabel');
-    const currentExportEl=document.getElementById('currentExport');
-    const chkInverter=document.getElementById('chkInverter');
-    const chkPanels=document.getElementById('chkPanels');
-    const chkBattery=document.getElementById('chkBattery');
-    const chkEV=document.getElementById('chkEV');
-    const chkExportOnly=document.getElementById('chkExportOnly');
-    const inverterCard=document.getElementById('inverterCard');
-    const panelsCard=document.getElementById('panelsCard');
-    const batteryCard=document.getElementById('batteryCard');
-    const evCard=document.getElementById('evCard');
-    const exportOnlyCard=document.getElementById('exportOnlyCard');
-    const invAddBlock=document.getElementById('invAdd');
-    const invReplaceBlock=document.getElementById('invReplace');
-    const invAddKw=document.getElementById('invAddKw');
-    const invNewKw=document.getElementById('invNewKw');
-    const requestedExport=document.getElementById('requestedExport');
-    const exportError=document.getElementById('exportError');
-    const sumApproved=document.getElementById('sumApproved');
-    const sumDelta=document.getElementById('sumDelta');
-    const sumProposed=document.getElementById('sumProposed');
+    const sumApproved=document.getElementById('sumApproved'),sumDelta=document.getElementById('sumDelta'),sumProposed=document.getElementById('sumProposed');
+    const currentExportEl=document.getElementById('currentExport'),requestedExport=document.getElementById('requestedExport'),exportError=document.getElementById('exportError');
+    const invAddKw=document.getElementById('invAddKw'),invNewKw=document.getElementById('invNewKw');
+    const batAddKw=document.getElementById('batAddKw'),batNewKw=document.getElementById('batNewKw');
+    const evAddKw=document.getElementById('evAddKw'),evNewKw=document.getElementById('evNewKw');
 
-    let approvedKW=5.0; let currentExportKW=0.0;
-    function fmt(n){return (Math.round((n+Number.EPSILON)*10)/10).toFixed(1);}
-    function loadDERRForNMI(nmi){
-      const rec=derrDB[nmi?.trim()]||{approvedKW:5.0,currentExportKW:0.0};
-      approvedKW=rec.approvedKW; currentExportKW=rec.currentExportKW;
-      approvedPill.textContent=fmt(approvedKW);
-      currentExportEl.value=fmt(currentExportKW);
-      sumApproved.textContent=fmt(approvedKW);
-      recalc();
-    }
-    function handleExportOnlyToggle(){
-      if(chkExportOnly.checked){
-        [chkInverter,chkPanels,chkBattery,chkEV].forEach(c=>c.checked=false);
-        [inverterCard,panelsCard,batteryCard,evCard].forEach(x=>x.style.display='none');
-      }
-      exportOnlyCard.style.display=chkExportOnly.checked?'block':'none'; recalc();
-    }
-    function handleEquipmentToggle(chk,card){
-      if(chk.checked){chkExportOnly.checked=false; exportOnlyCard.style.display='none';}
-      card.style.display=chk.checked?'block':'none'; recalc();
-    }
-    function handleInverterMode(){
-      const mode=[...document.querySelectorAll('input[name="invMode"]')].find(r=>r.checked)?.value;
-      invAddBlock.style.display=mode==='add'?'grid':'none';
-      invReplaceBlock.style.display=mode==='replace'?'block':'none';
-      if(mode!=='add') invAddKw.value='';
-      if(mode!=='replace') invNewKw.value='';
-      recalc();
-    }
-    function calcDeltaKW(){
-      let delta=0;
-      if(chkInverter.checked){
-        const mode=[...document.querySelectorAll('input[name="invMode"]')].find(r=>r.checked)?.value;
-        if(mode==='add'){
-          const add=parseFloat(invAddKw.value); if(!isNaN(add)&&add>0) delta+=add;
-        }else if(mode==='replace'){
-          const newSize=parseFloat(invNewKw.value);
-          if(!isNaN(newSize)&&newSize>=0){delta+=(newSize-approvedKW);}
-        }
-      }
-      return delta;
-    }
-    function recalc(){
-      const delta=calcDeltaKW(); const proposed=Math.max(0,approvedKW+delta);
-      sumApproved.textContent=fmt(approvedKW);
-      sumDelta.textContent=(delta>=0?'+':'')+fmt(delta);
-      sumProposed.textContent=fmt(proposed);
-      totalCapacityLabel.textContent=fmt(proposed);
-      validateExport(proposed);
-    }
-    function validateExport(proposed){
-      const req=parseFloat(requestedExport.value);
-      exportError.style.display='none'; exportError.textContent='';
-      document.getElementById('submitBtn').disabled=false;
-      if(!isNaN(req)){
-        if(req<0){exportError.textContent='Requested export must be 0 kW or higher.';exportError.style.display='block';document.getElementById('submitBtn').disabled=true;}
-        else if(req>proposed){exportError.textContent=`Requested export cannot exceed proposed site AC capacity (${fmt(proposed)} kW).`;exportError.style.display='block';document.getElementById('submitBtn').disabled=true;}
-      }
-    }
-    nmiEl.addEventListener('change',e=>loadDERRForNMI(e.target.value));
-    nmiEl.addEventListener('blur',e=>loadDERRForNMI(e.target.value));
-    chkExportOnly.addEventListener('change',handleExportOnlyToggle);
-    chkInverter.addEventListener('change',()=>handleEquipmentToggle(chkInverter,inverterCard));
-    chkPanels.addEventListener('change',()=>handleEquipmentToggle(chkPanels,panelsCard));
-    chkBattery.addEventListener('change',()=>handleEquipmentToggle(chkBattery,batteryCard));
-    chkEV.addEventListener('change',()=>handleEquipmentToggle(chkEV,evCard));
-    document.querySelectorAll('input[name="invMode"]').forEach(r=>r.addEventListener('change',handleInverterMode));
-    [invAddKw,invNewKw,requestedExport].forEach(el=>el.addEventListener('input',recalc));
-    document.getElementById('submitBtn').addEventListener('click',e=>{
-      e.preventDefault(); const delta=calcDeltaKW();
-      const proposed=Math.max(0,approvedKW+delta); const req=parseFloat(requestedExport.value);
-      if(!isNaN(req)&&(req>proposed||req<0)){validateExport(proposed);return;}
-      const payload={nmi:nmiEl.value||null,derrApprovedKW:approvedKW,derrCurrentExportKW:currentExportKW,
-        selections:{inverter:chkInverter.checked?( ()=>{const mode=[...document.querySelectorAll('input[name="invMode"]')].find(r=>r.checked)?.value;
-          if(mode==='add')return{mode:'adding',additionalKW:parseFloat(invAddKw.value)||0};
-          if(mode==='replace')return{mode:'replacing',newTotalKW:parseFloat(invNewKw.value)||0};
-          return{mode:null};})():null,panels:chkPanels.checked,battery:chkBattery.checked,evCharger:chkEV.checked,exportOnly:chkExportOnly.checked},
-        proposedTotalKw:proposed,requestedExportKw:isNaN(req)?null:req};
-      alert(`Draft submission\n\nNMI: ${payload.nmi||'(not entered)'}\nExisting approved: ${fmt(payload.derrApprovedKW)} kW\nProposed total: ${fmt(payload.proposedTotalKw)} kW\nRequested export: ${payload.requestedExportKw!==null?fmt(payload.requestedExportKw)+' kW':'(not set)'}\n\nThis is a front-end demo. Replace alert with your POST in production.`);});
-    loadDERRForNMI('');
+    function fmt(n){return (Math.round(n*10)/10).toFixed(1);}
+    function loadNMI(nmi){let rec=derrDB[nmi]||{approvedKW:5,currentExportKW:0};approvedKW=rec.approvedKW;currentExportKW=rec.currentExportKW;sumApproved.textContent=fmt(approvedKW);currentExportEl.value=fmt(currentExportKW);recalc();}
+    function toggle(chk,card){card.style.display=chk.checked?'block':'none';recalc();}
+    function radioToggle(name,targetId){document.getElementsByName(name).forEach(r=>r.addEventListener('change',()=>{document.getElementById(targetId).style.display=r.value==='ac'?'block':'none';recalc()}));}
+    function modeToggle(name,addId,repId){document.getElementsByName(name).forEach(r=>r.addEventListener('change',()=>{document.getElementById(addId).style.display=r.value==='add'?'block':'none';document.getElementById(repId).style.display=r.value==='replace'?'block':'none';recalc()}));}
+    function calcDelta(){let d=0;
+      if(document.getElementById('chkInverter').checked){let m=document.querySelector('input[name="invMode"]:checked')?.value;if(m==='add'){let v=parseFloat(invAddKw.value);if(!isNaN(v))d+=v;}else if(m==='replace'){let v=parseFloat(invNewKw.value);if(!isNaN(v))d+=(v-approvedKW);}}
+      if(document.getElementById('chkBattery').checked && document.querySelector('input[name="batType"]:checked')?.value==='ac'){let m=document.querySelector('input[name="batMode"]:checked')?.value;if(m==='add'){let v=parseFloat(batAddKw.value);if(!isNaN(v))d+=v;}else if(m==='replace'){let v=parseFloat(batNewKw.value);if(!isNaN(v))d+=(v-approvedKW);}}
+      if(document.getElementById('chkEV').checked){let m=document.querySelector('input[name="evMode"]:checked')?.value;if(m==='add'){let v=parseFloat(evAddKw.value);if(!isNaN(v))d+=v;}else if(m==='replace'){let v=parseFloat(evNewKw.value);if(!isNaN(v))d+=(v-approvedKW);}}
+      return d;}
+    function recalc(){let d=calcDelta(),p=approvedKW+d;sumDelta.textContent=(d>=0?'+':'')+fmt(d);sumProposed.textContent=fmt(p);validateExport(p);}
+    function validateExport(p){let r=parseFloat(requestedExport.value);exportError.style.display='none';if(!isNaN(r)){if(r<0||r>p){exportError.textContent=`Invalid export (must be between 0 and ${fmt(p)} kW)`;exportError.style.display='block';}}}
+
+    document.getElementById('nmi').addEventListener('change',e=>loadNMI(e.target.value));
+    ['chkInverter','chkPanels','chkBattery','chkEV','chkExportOnly'].forEach(id=>document.getElementById(id).addEventListener('change',()=>toggle(document.getElementById(id),document.getElementById(id.replace('chk','').toLowerCase()+'Card'))));
+    modeToggle('invMode','invAdd','invReplace');modeToggle('batMode','batAdd','batReplace');modeToggle('evMode','evAdd','evReplace');
+    radioToggle('batType','acBatteryOptions');
+    [invAddKw,invNewKw,batAddKw,batNewKw,evAddKw,evNewKw,requestedExport].forEach(el=>el.addEventListener('input',recalc));
+    loadNMI('');
   </script>
 </body>
 </html>
