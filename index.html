@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPA Upgrade Application</title>
+  <title>Solar Pre-Approval Application</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -36,6 +36,14 @@
     .form-group { margin-bottom: 24px; }
     .sub-options { margin-left: 20px; margin-top: 8px; }
     .note { font-size: 0.9rem; color: #555; margin-left: 24px; }
+    .total-box {
+      background: #f0f4ff;
+      border: 1px solid #ccd;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 24px;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -45,7 +53,7 @@
 
     <!-- NMI Entry -->
     <div class="form-group">
-      <label for="nmi">Enter your NMI</label>
+      <label for="nmi">Enter your NMI to search for your property</label>
       <input type="text" id="nmi" placeholder="Enter your 10-digit NMI">
       <p id="nmiHint" style="color:#666;font-size:0.9rem;">You can find your NMI on your electricity bill.</p>
     </div>
@@ -76,6 +84,12 @@
             <option value="adding">Adding</option>
             <option value="replacing">Replacing</option>
           </select>
+          <div id="inverterAddOptions" class="hidden sub-options">
+            <label>Additional Inverter Capacity (kW): 
+              <input type="number" id="inverterAddCapacity" step="0.1" min="0">
+            </label>
+            <p class="note">Enter the AC capacity being added to the site.</p>
+          </div>
           <div id="inverterReplaceOptions" class="hidden sub-options">
             <label><input type="radio" name="invReplace" value="larger"> Larger inverter</label>
             <input type="number" placeholder="New inverter AC (kW)">
@@ -83,12 +97,6 @@
             <label><input type="radio" name="invReplace" value="warranty"> Warranty replacement</label>
           </div>
         </div>
-      </div>
-
-      <!-- Solar Panels -->
-      <div class="form-group">
-        <label><input type="checkbox" id="chkPanels"> Solar Panels</label>
-        <p id="panelNote" class="hidden sub-options">No additional AC capacity needed.</p>
       </div>
 
       <!-- Battery -->
@@ -102,8 +110,11 @@
             <option value="replacing">Replacing</option>
           </select>
           <div id="batteryAddOptions" class="hidden sub-options">
-            <label><input type="checkbox"> DC-coupled battery</label>
-            <label>AC battery size (kW): <input type="number"></label>
+            <label>Additional Battery Capacity (kW):
+              <input type="number" id="batteryAddCapacity" step="0.1" min="0">
+            </label>
+            <p class="note">Enter the AC capacity being added to the site.</p>
+            <label><input type="checkbox"> DC-coupled battery (tick if applicable)</label>
           </div>
           <div id="batteryReplaceOptions" class="hidden sub-options">
             <label><input type="radio" name="batReplace" value="larger"> Larger battery</label>
@@ -125,7 +136,10 @@
             <option value="replacing">Replacing</option>
           </select>
           <div id="evAddOptions" class="hidden sub-options">
-            <label>EV Charger size (kW): <input type="number"></label>
+            <label>Additional EV Charger Capacity (kW):
+              <input type="number" id="evAddCapacity" step="0.1" min="0">
+            </label>
+            <p class="note">Enter the AC capacity being added to the site.</p>
           </div>
           <div id="evReplaceOptions" class="hidden sub-options">
             <label><input type="radio" name="evReplace" value="larger"> Larger charger</label>
@@ -143,7 +157,7 @@
       </div>
     </div>
 
-    <!-- Export Section (always visible after NMI) -->
+    <!-- Export Section -->
     <div class="section hidden" id="exportSection">
       <h2>Export Details</h2>
       <label for="currentExport">Current Export (kW)</label>
@@ -151,6 +165,11 @@
 
       <label for="requestedExport">Requested Export Limit (kW)</label>
       <input type="number" id="requestedExport" step="0.1" min="0">
+
+      <!-- Total capacity -->
+      <div class="total-box">
+        Aggregated Total Capacity: <span id="totalCapacityDisplay">0.0 kW</span>
+      </div>
     </div>
   </div>
 
@@ -161,23 +180,17 @@
         exportLimit: 5.0,
         phase: 'Single Phase',
         expiry: '15/12/2025'
-      },
-      '6201601234': {
-        address: '88 Energy Way, Fitzroy North VIC 3068',
-        exportLimit: 3.5,
-        phase: 'Three Phase',
-        expiry: '22/07/2026'
       }
     };
 
-    let totalCapacity = 0;
+    let baseCapacity = 0;
 
     // NMI lookup
     document.getElementById('nmi').addEventListener('input', function(e) {
       const nmi = e.target.value;
       if (nmi.length >= 10 && derrLookup[nmi]) {
         const rec = derrLookup[nmi];
-        totalCapacity = rec.exportLimit;
+        baseCapacity = rec.exportLimit;
         document.getElementById('propertyAddress').textContent = rec.address;
         document.getElementById('exportCapacityTitle').textContent = `Current Export Capacity: ${rec.exportLimit.toFixed(1)}kW`;
         document.getElementById('exportInfo').textContent = `Expires: ${rec.expiry} | Phase Limitation: ${rec.phase}`;
@@ -186,6 +199,7 @@
         document.getElementById('propertyDisplay').classList.remove('hidden');
         document.getElementById('installSection').classList.remove('hidden');
         document.getElementById('exportSection').classList.remove('hidden');
+        updateTotal();
       }
     });
 
@@ -193,15 +207,16 @@
     const toggle = (chkId, targetId) => {
       document.getElementById(chkId).addEventListener('change', e => {
         document.getElementById(targetId).classList.toggle('hidden', !e.target.checked);
+        updateTotal();
       });
     };
 
     toggle('chkInverter', 'inverterOptions');
-    toggle('chkPanels', 'panelNote');
     toggle('chkBattery', 'batteryOptions');
     toggle('chkEV', 'evOptions');
 
     document.getElementById('inverterAction').addEventListener('change', e => {
+      document.getElementById('inverterAddOptions').classList.toggle('hidden', e.target.value !== 'adding');
       document.getElementById('inverterReplaceOptions').classList.toggle('hidden', e.target.value !== 'replacing');
     });
 
@@ -220,18 +235,18 @@
       document.getElementById('exportNote').classList.toggle('hidden', !e.target.checked);
     });
 
-    // Validation for export
-    document.getElementById('requestedExport').addEventListener('input', function () {
-      const val = parseFloat(this.value);
-      if (val > totalCapacity) {
-        this.setCustomValidity(`Export limit cannot exceed ${totalCapacity.toFixed(1)} kW`);
-        this.reportValidity();
-        this.style.borderColor = '#f56565';
-      } else {
-        this.setCustomValidity('');
-        this.style.borderColor = '#ccc';
-      }
-    });
+    // Validation + total update
+    document.querySelectorAll('#inverterAddCapacity, #batteryAddCapacity, #evAddCapacity, #requestedExport')
+      .forEach(el => el.addEventListener('input', updateTotal));
+
+    function updateTotal() {
+      let addInv = parseFloat(document.getElementById('inverterAddCapacity').value) || 0;
+      let addBat = parseFloat(document.getElementById('batteryAddCapacity').value) || 0;
+      let addEV  = parseFloat(document.getElementById('evAddCapacity').value) || 0;
+
+      let total = baseCapacity + addInv + addBat + addEV;
+      document.getElementById('totalCapacityDisplay').textContent = total.toFixed(1) + " kW";
+    }
   </script>
 </body>
 </html>
