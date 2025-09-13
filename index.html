@@ -74,6 +74,13 @@
     <div class="section hidden" id="installSection">
       <h2>Installation Details</h2>
 
+      <!-- Approved AC Capacity -->
+      <div class="form-group">
+        <label for="approvedAC">Approved AC Capacity (kW)</label>
+        <input type="text" id="approvedAC" disabled value="0.0 kW">
+        <p class="note">This is the current system size from DER Registration.</p>
+      </div>
+
       <!-- Inverter -->
       <div class="form-group">
         <label><input type="checkbox" id="chkInverter"> Inverter</label>
@@ -89,12 +96,6 @@
               <input type="number" id="inverterAddCapacity" step="0.1" min="0">
             </label>
             <p class="note">Enter the AC capacity being added to the site.</p>
-          </div>
-          <div id="inverterReplaceOptions" class="hidden sub-options">
-            <label><input type="radio" name="invReplace" value="larger"> Larger inverter</label>
-            <input type="number" placeholder="New inverter AC (kW)">
-            <label><input type="radio" name="invReplace" value="like"> Like-for-like</label>
-            <label><input type="radio" name="invReplace" value="warranty"> Warranty replacement</label>
           </div>
         </div>
       </div>
@@ -114,13 +115,6 @@
               <input type="number" id="batteryAddCapacity" step="0.1" min="0">
             </label>
             <p class="note">Enter the AC capacity being added to the site.</p>
-            <label><input type="checkbox"> DC-coupled battery (tick if applicable)</label>
-          </div>
-          <div id="batteryReplaceOptions" class="hidden sub-options">
-            <label><input type="radio" name="batReplace" value="larger"> Larger battery</label>
-            <input type="number" placeholder="New battery AC (kW)">
-            <label><input type="radio" name="batReplace" value="like"> Like-for-like</label>
-            <label><input type="radio" name="batReplace" value="warranty"> Warranty replacement</label>
           </div>
         </div>
       </div>
@@ -141,19 +135,7 @@
             </label>
             <p class="note">Enter the AC capacity being added to the site.</p>
           </div>
-          <div id="evReplaceOptions" class="hidden sub-options">
-            <label><input type="radio" name="evReplace" value="larger"> Larger charger</label>
-            <input type="number" placeholder="New AC (kW)">
-            <label><input type="radio" name="evReplace" value="like"> Like-for-like</label>
-            <label><input type="radio" name="evReplace" value="warranty"> Warranty replacement</label>
-          </div>
         </div>
-      </div>
-
-      <!-- Export Increase Only -->
-      <div class="form-group">
-        <label><input type="checkbox" id="chkExportOnly"> Export Increase Only</label>
-        <p id="exportNote" class="hidden note">Continue to Export Section below.</p>
       </div>
     </div>
 
@@ -178,29 +160,32 @@
       '1234567891': {
         address: '27 Rooftop Crescent, Sunshine VIC 3020',
         exportLimit: 5.0,
+        acCapacity: 5.0, // NEW field: approved AC system size
         phase: 'Single Phase',
         expiry: '15/12/2025'
       },
       '6201601234': {
         address: '88 Energy Way, Fitzroy North VIC 3068',
         exportLimit: 3.5,
+        acCapacity: 6.0,
         phase: 'Three Phase',
         expiry: '22/07/2026'
       }
     };
 
-    let baseCapacity = 0;
+    let baseAC = 0;
 
     // NMI lookup
     document.getElementById('nmi').addEventListener('input', function(e) {
       const nmi = e.target.value;
       if (nmi.length >= 10 && derrLookup[nmi]) {
         const rec = derrLookup[nmi];
-        baseCapacity = rec.exportLimit;
+        baseAC = rec.acCapacity;
         document.getElementById('propertyAddress').textContent = rec.address;
         document.getElementById('exportCapacityTitle').textContent = `Current Export Capacity: ${rec.exportLimit.toFixed(1)}kW`;
         document.getElementById('exportInfo').textContent = `Expires: ${rec.expiry} | Phase Limitation: ${rec.phase}`;
         document.getElementById('currentExport').value = rec.exportLimit.toFixed(1) + " kW";
+        document.getElementById('approvedAC').value = rec.acCapacity.toFixed(1) + " kW";
 
         document.getElementById('propertyDisplay').classList.remove('hidden');
         document.getElementById('installSection').classList.remove('hidden');
@@ -209,42 +194,6 @@
       }
     });
 
-    // Toggle logic
-    const toggle = (chkId, targetId) => {
-      document.getElementById(chkId).addEventListener('change', e => {
-        document.getElementById(targetId).classList.toggle('hidden', !e.target.checked);
-        updateTotal();
-      });
-    };
-
-    toggle('chkInverter', 'inverterOptions');
-    toggle('chkBattery', 'batteryOptions');
-    toggle('chkEV', 'evOptions');
-
-    document.getElementById('inverterAction').addEventListener('change', e => {
-      document.getElementById('inverterAddOptions').classList.toggle('hidden', e.target.value !== 'adding');
-      document.getElementById('inverterReplaceOptions').classList.toggle('hidden', e.target.value !== 'replacing');
-      updateTotal();
-    });
-
-    document.getElementById('batteryAction').addEventListener('change', e => {
-      document.getElementById('batteryAddOptions').classList.toggle('hidden', e.target.value !== 'adding');
-      document.getElementById('batteryReplaceOptions').classList.toggle('hidden', e.target.value !== 'replacing');
-      updateTotal();
-    });
-
-    document.getElementById('evAction').addEventListener('change', e => {
-      document.getElementById('evAddOptions').classList.toggle('hidden', e.target.value !== 'adding');
-      document.getElementById('evReplaceOptions').classList.toggle('hidden', e.target.value !== 'replacing');
-      updateTotal();
-    });
-
-    // Export Increase Only note
-    document.getElementById('chkExportOnly').addEventListener('change', e => {
-      document.getElementById('exportNote').classList.toggle('hidden', !e.target.checked);
-    });
-
-    // Update total
     function updateTotal() {
       let addInv = (document.getElementById('chkInverter').checked && document.getElementById('inverterAction').value === 'adding')
         ? parseFloat(document.getElementById('inverterAddCapacity').value) || 0 : 0;
@@ -255,11 +204,11 @@
       let addEV = (document.getElementById('chkEV').checked && document.getElementById('evAction').value === 'adding')
         ? parseFloat(document.getElementById('evAddCapacity').value) || 0 : 0;
 
-      let total = baseCapacity + addInv + addBat + addEV;
+      let total = baseAC + addInv + addBat + addEV;
       document.getElementById('totalCapacityDisplay').textContent = total.toFixed(1) + " kW";
     }
 
-    // Attach listeners to update total
+    // listeners
     ['inverterAddCapacity','batteryAddCapacity','evAddCapacity','inverterAction','batteryAction','evAction',
      'chkInverter','chkBattery','chkEV'].forEach(id => {
       document.getElementById(id).addEventListener('input', updateTotal);
