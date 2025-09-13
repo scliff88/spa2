@@ -1,169 +1,126 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SPA Upgrade Application</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
-    :root{
-      --bg1:#77fdf5; --bg2:#86a8e7; --bg3:#91eae4;
-      --ink:#2e2e2e; --muted:#666; --brand:#00cfff;
-      --pill:#a076f9; --line:#e6e6e6; --warn:#e11d48;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
     }
-    body{font-family:Inter,sans-serif;margin:0;padding:40px;display:flex;justify-content:center;
-      background:linear-gradient(to right,var(--bg1),var(--bg2),var(--bg3))}
-    .container{width:100%;max-width:720px;background:#fff;border-radius:16px;padding:32px 40px;
-      box-shadow:0 8px 24px rgba(0,0,0,.1)}
-    h1{text-align:center;margin:0 0 4px;color:var(--ink)}
-    .subtitle{text-align:center;color:var(--muted);margin:0 0 24px}
-    .section-title{margin:24px 0 8px;font-weight:600;color:var(--ink)}
-    .info-pill{background:var(--pill);color:#fff;border-radius:10px;padding:14px;font-weight:600;margin:16px 0}
-    .info-pill .kv{display:flex;justify-content:space-between;padding:4px 0}
-    .form-group{margin:12px 0 18px}
-    label{display:block;font-weight:600;margin:0 0 8px}
-    input[type="text"],input[type="number"]{width:100%;padding:10px 12px;border:1px solid #ccc;border-radius:8px}
-    .checkbox-row{display:flex;align-items:center;gap:10px;margin:8px 0}
-    .subcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0 8px;background:#fafafa}
-    .radio-row{display:flex;gap:14px;margin:8px 0;flex-wrap:wrap}
-    .hint{font-size:.9rem;color:var(--muted);margin-top:6px}
-    .error{color:var(--warn);font-size:.9rem;margin-top:6px}
-    .submit{width:100%;padding:14px;border:0;border-radius:10px;background:var(--brand);color:#fff;
-      font-weight:700;font-size:16px;cursor:pointer;margin-top:14px}
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      max-width: 720px;
+      width: 100%;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+    h1, h2, h3, p { margin: 0 0 16px; }
+    h1 { font-size: 1.8rem; }
+    label { font-weight: 600; display: block; margin: 16px 0 8px; }
+    input[type="text"], input[type="number"] {
+      width: 100%; padding: 12px; border-radius: 8px;
+      border: 1px solid #ccc; font-size: 1rem;
+    }
+    .hidden { display: none; }
+    .alert {
+      background: #6b46c1; color: white;
+      padding: 16px; border-radius: 8px; margin-bottom: 16px;
+    }
+    .section { margin-top: 32px; animation: fadeInSlide 0.5s ease forwards; }
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .form-group { margin-bottom: 24px; }
+    .btn-primary {
+      padding: 12px 24px; background: #4facfe; color: white;
+      border: none; border-radius: 8px; cursor: pointer;
+      font-weight: 600; font-size: 1rem;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>SPA Upgrade Application</h1>
-    <p class="subtitle">DER Upgrade - V2G & Capacity Logic Demo</p>
+    <p>DER Upgrade - V2G & Capacity Logic Demo</p>
 
     <div class="form-group">
       <label for="nmi">Enter your NMI</label>
-      <input type="text" id="nmi" placeholder="1234567891"/>
-      <div class="hint">You can find your NMI on your electricity bill.</div>
+      <input type="text" id="nmi" placeholder="Enter your 10-digit NMI">
+      <p id="nmiHint" style="color:#666;font-size:0.9rem;">You can find your NMI on your electricity bill.</p>
     </div>
 
-    <div class="info-pill">
-      <div class="kv"><span>Existing approved capacity</span><strong><span id="sumApproved">5.0</span> kW</strong></div>
-      <div class="kv"><span>Change from this application</span><strong><span id="sumDelta">+0.0</span> kW</strong></div>
-      <div class="kv"><span>Proposed total site AC capacity</span><strong><span id="sumProposed">5.0</span> kW</strong></div>
-    </div>
-
-    <div class="section-title">Installation Details</div>
-
-    <!-- Inverter -->
-    <div class="checkbox-row"><input type="checkbox" id="chkInverter"/><label for="chkInverter">Inverter</label></div>
-    <div id="inverterCard" class="subcard" style="display:none">
-      <div class="radio-row">
-        <label><input type="radio" name="invMode" value="add"> Adding</label>
-        <label><input type="radio" name="invMode" value="replace"> Replacing</label>
+    <div id="propertyDisplay" class="hidden">
+      <div class="alert">
+        <h3>Property Found</h3>
+        <p id="propertyAddress">Address will appear here</p>
       </div>
-      <div id="invAdd" style="display:none">
-        <label>Additional inverter capacity (kW)</label>
-        <input type="number" id="invAddKw" min="0" step="0.1"/>
-      </div>
-      <div id="invReplace" style="display:none">
-        <label>New inverter total size (kW)</label>
-        <input type="number" id="invNewKw" min="0" step="0.1"/>
+      <div class="alert">
+        <h3 id="exportCapacityTitle">Current Export Capacity: 0.0 kW</h3>
+        <p id="exportInfo">Details will appear here</p>
       </div>
     </div>
 
-    <!-- Panels -->
-    <div class="checkbox-row"><input type="checkbox" id="chkPanels"/><label for="chkPanels">Panels</label></div>
-    <div id="panelsCard" class="subcard" style="display:none">
-      <div class="hint">Added. No additional AC capacity required.</div>
-    </div>
+    <div class="section hidden" id="exportSection">
+      <label for="currentExport">Current Export (kW)</label>
+      <input type="text" id="currentExport" disabled value="0.0 kW">
 
-    <!-- Battery -->
-    <div class="checkbox-row"><input type="checkbox" id="chkBattery"/><label for="chkBattery">Battery</label></div>
-    <div id="batteryCard" class="subcard" style="display:none">
-      <div class="radio-row">
-        <label><input type="radio" name="batType" value="dc"> DC Battery</label>
-        <label><input type="radio" name="batType" value="ac"> AC Battery</label>
-      </div>
-      <div id="acBatteryOptions" style="display:none">
-        <div class="radio-row">
-          <label><input type="radio" name="batMode" value="add"> Adding</label>
-          <label><input type="radio" name="batMode" value="replace"> Replacing</label>
-        </div>
-        <div id="batAdd" style="display:none">
-          <label>Additional AC battery capacity (kW)</label>
-          <input type="number" id="batAddKw" min="0" step="0.1"/>
-        </div>
-        <div id="batReplace" style="display:none">
-          <label>New AC battery total size (kW)</label>
-          <input type="number" id="batNewKw" min="0" step="0.1"/>
-        </div>
-      </div>
+      <label for="requestedExport">Requested Export Limit (kW)</label>
+      <input type="number" id="requestedExport" step="0.1" min="0">
     </div>
-
-    <!-- EV Charger -->
-    <div class="checkbox-row"><input type="checkbox" id="chkEV"/><label for="chkEV">EV Charger</label></div>
-    <div id="evCard" class="subcard" style="display:none">
-      <div class="radio-row">
-        <label><input type="radio" name="evMode" value="add"> Adding</label>
-        <label><input type="radio" name="evMode" value="replace"> Replacing</label>
-      </div>
-      <div id="evAdd" style="display:none">
-        <label>Additional EV charger capacity (kW)</label>
-        <input type="number" id="evAddKw" min="0" step="0.1"/>
-      </div>
-      <div id="evReplace" style="display:none">
-        <label>New EV charger total size (kW)</label>
-        <input type="number" id="evNewKw" min="0" step="0.1"/>
-      </div>
-    </div>
-
-    <!-- Export only -->
-    <div class="checkbox-row"><input type="checkbox" id="chkExportOnly"/><label for="chkExportOnly">Export Increase Only</label></div>
-    <div id="exportOnlyCard" class="subcard" style="display:none">
-      <div class="hint">No equipment changes. You are only requesting an export change.</div>
-    </div>
-
-    <div class="section-title">Export Details</div>
-    <div class="form-group">
-      <label for="currentExport">Current export (kW)</label>
-      <input type="text" id="currentExport" disabled/>
-    </div>
-    <div class="form-group">
-      <label for="requestedExport">Requested export limit (kW)</label>
-      <input type="number" id="requestedExport" min="0" step="0.1"/>
-      <div class="hint">Enter the maximum kW you would like this site to export.</div>
-      <div id="exportError" class="error" style="display:none"></div>
-    </div>
-
-    <button id="submitBtn" class="submit">Submit Application</button>
   </div>
 
   <script>
-    const derrDB={"1234567891":{approvedKW:5,currentExportKW:0},"6201601234":{approvedKW:7.5,currentExportKW:5}};
-    let approvedKW=5,currentExportKW=0;
+    const derrLookup = {
+      '1234567891': {
+        address: '27 Rooftop Crescent, Sunshine VIC 3020',
+        exportLimit: 5.0,
+        phase: 'Single Phase',
+        expiry: '15/12/2025'
+      },
+      '6201601234': {
+        address: '88 Energy Way, Fitzroy North VIC 3068',
+        exportLimit: 3.5,
+        phase: 'Three Phase',
+        expiry: '22/07/2026'
+      }
+    };
 
-    const sumApproved=document.getElementById('sumApproved'),sumDelta=document.getElementById('sumDelta'),sumProposed=document.getElementById('sumProposed');
-    const currentExportEl=document.getElementById('currentExport'),requestedExport=document.getElementById('requestedExport'),exportError=document.getElementById('exportError');
-    const invAddKw=document.getElementById('invAddKw'),invNewKw=document.getElementById('invNewKw');
-    const batAddKw=document.getElementById('batAddKw'),batNewKw=document.getElementById('batNewKw');
-    const evAddKw=document.getElementById('evAddKw'),evNewKw=document.getElementById('evNewKw');
+    let totalCapacity = 0;
 
-    function fmt(n){return (Math.round(n*10)/10).toFixed(1);}
-    function loadNMI(nmi){let rec=derrDB[nmi]||{approvedKW:5,currentExportKW:0};approvedKW=rec.approvedKW;currentExportKW=rec.currentExportKW;sumApproved.textContent=fmt(approvedKW);currentExportEl.value=fmt(currentExportKW);recalc();}
-    function toggle(chk,card){card.style.display=chk.checked?'block':'none';recalc();}
-    function radioToggle(name,targetId){document.getElementsByName(name).forEach(r=>r.addEventListener('change',()=>{document.getElementById(targetId).style.display=r.value==='ac'?'block':'none';recalc()}));}
-    function modeToggle(name,addId,repId){document.getElementsByName(name).forEach(r=>r.addEventListener('change',()=>{document.getElementById(addId).style.display=r.value==='add'?'block':'none';document.getElementById(repId).style.display=r.value==='replace'?'block':'none';recalc()}));}
-    function calcDelta(){let d=0;
-      if(document.getElementById('chkInverter').checked){let m=document.querySelector('input[name="invMode"]:checked')?.value;if(m==='add'){let v=parseFloat(invAddKw.value);if(!isNaN(v))d+=v;}else if(m==='replace'){let v=parseFloat(invNewKw.value);if(!isNaN(v))d+=(v-approvedKW);}}
-      if(document.getElementById('chkBattery').checked && document.querySelector('input[name="batType"]:checked')?.value==='ac'){let m=document.querySelector('input[name="batMode"]:checked')?.value;if(m==='add'){let v=parseFloat(batAddKw.value);if(!isNaN(v))d+=v;}else if(m==='replace'){let v=parseFloat(batNewKw.value);if(!isNaN(v))d+=(v-approvedKW);}}
-      if(document.getElementById('chkEV').checked){let m=document.querySelector('input[name="evMode"]:checked')?.value;if(m==='add'){let v=parseFloat(evAddKw.value);if(!isNaN(v))d+=v;}else if(m==='replace'){let v=parseFloat(evNewKw.value);if(!isNaN(v))d+=(v-approvedKW);}}
-      return d;}
-    function recalc(){let d=calcDelta(),p=approvedKW+d;sumDelta.textContent=(d>=0?'+':'')+fmt(d);sumProposed.textContent=fmt(p);validateExport(p);}
-    function validateExport(p){let r=parseFloat(requestedExport.value);exportError.style.display='none';if(!isNaN(r)){if(r<0||r>p){exportError.textContent=`Invalid export (must be between 0 and ${fmt(p)} kW)`;exportError.style.display='block';}}}
+    document.getElementById('nmi').addEventListener('input', function(e) {
+      const nmi = e.target.value;
+      if (nmi.length >= 10 && derrLookup[nmi]) {
+        const rec = derrLookup[nmi];
+        totalCapacity = rec.exportLimit;
+        document.getElementById('propertyAddress').textContent = rec.address;
+        document.getElementById('exportCapacityTitle').textContent = `Current Export Capacity: ${rec.exportLimit.toFixed(1)}kW`;
+        document.getElementById('exportInfo').textContent = `Expires: ${rec.expiry} | Phase Limitation: ${rec.phase}`;
+        document.getElementById('currentExport').value = rec.exportLimit.toFixed(1) + " kW";
 
-    document.getElementById('nmi').addEventListener('change',e=>loadNMI(e.target.value));
-    ['chkInverter','chkPanels','chkBattery','chkEV','chkExportOnly'].forEach(id=>document.getElementById(id).addEventListener('change',()=>toggle(document.getElementById(id),document.getElementById(id.replace('chk','').toLowerCase()+'Card'))));
-    modeToggle('invMode','invAdd','invReplace');modeToggle('batMode','batAdd','batReplace');modeToggle('evMode','evAdd','evReplace');
-    radioToggle('batType','acBatteryOptions');
-    [invAddKw,invNewKw,batAddKw,batNewKw,evAddKw,evNewKw,requestedExport].forEach(el=>el.addEventListener('input',recalc));
-    loadNMI('');
+        document.getElementById('propertyDisplay').classList.remove('hidden');
+        document.getElementById('exportSection').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('requestedExport').addEventListener('input', function () {
+      const val = parseFloat(this.value);
+      if (val > totalCapacity) {
+        this.setCustomValidity(`Export limit cannot exceed ${totalCapacity.toFixed(1)} kW`);
+        this.reportValidity();
+        this.style.borderColor = '#f56565';
+      } else {
+        this.setCustomValidity('');
+        this.style.borderColor = '#ccc';
+      }
+    });
   </script>
 </body>
 </html>
