@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +23,7 @@
     h1, h2, h3, p { margin: 0 0 16px; }
     h1 { font-size: 1.8rem; }
     label { font-weight: 600; display: block; margin: 16px 0 8px; }
-    input[type="text"], input[type="number"] {
+    input[type="text"], input[type="number"], select {
       width: 100%; padding: 12px; border-radius: 8px;
       border: 1px solid #ccc; font-size: 1rem;
     }
@@ -33,17 +32,9 @@
       background: #6b46c1; color: white;
       padding: 16px; border-radius: 8px; margin-bottom: 16px;
     }
-    .section { margin-top: 32px; animation: fadeInSlide 0.5s ease forwards; }
-    @keyframes fadeInSlide {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .section { margin-top: 32px; }
     .form-group { margin-bottom: 24px; }
-    .btn-primary {
-      padding: 12px 24px; background: #4facfe; color: white;
-      border: none; border-radius: 8px; cursor: pointer;
-      font-weight: 600; font-size: 1rem;
-    }
+    .sub-options { margin-left: 20px; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -51,12 +42,14 @@
     <h1>SPA Upgrade Application</h1>
     <p>DER Upgrade - V2G & Capacity Logic Demo</p>
 
+    <!-- NMI Entry -->
     <div class="form-group">
       <label for="nmi">Enter your NMI</label>
       <input type="text" id="nmi" placeholder="Enter your 10-digit NMI">
       <p id="nmiHint" style="color:#666;font-size:0.9rem;">You can find your NMI on your electricity bill.</p>
     </div>
 
+    <!-- Property & Capacity -->
     <div id="propertyDisplay" class="hidden">
       <div class="alert">
         <h3>Property Found</h3>
@@ -68,9 +61,91 @@
       </div>
     </div>
 
+    <!-- Installation Details -->
+    <div class="section hidden" id="installSection">
+      <h2>Installation Details</h2>
+
+      <!-- Inverter -->
+      <div class="form-group">
+        <label><input type="checkbox" id="chkInverter"> Inverter</label>
+        <div id="inverterOptions" class="hidden sub-options">
+          <label>Adding or replacing?</label>
+          <select id="inverterAction">
+            <option value="">Select</option>
+            <option value="adding">Adding</option>
+            <option value="replacing">Replacing</option>
+          </select>
+          <div id="inverterReplaceOptions" class="hidden sub-options">
+            <label><input type="radio" name="invReplace" value="larger"> Larger inverter</label>
+            <input type="number" placeholder="New inverter AC (kW)">
+            <label><input type="radio" name="invReplace" value="like"> Like-for-like</label>
+            <label><input type="radio" name="invReplace" value="warranty"> Warranty replacement</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Solar Panels -->
+      <div class="form-group">
+        <label><input type="checkbox" id="chkPanels"> Solar Panels</label>
+        <p id="panelNote" class="hidden sub-options">No additional AC capacity needed.</p>
+      </div>
+
+      <!-- Battery -->
+      <div class="form-group">
+        <label><input type="checkbox" id="chkBattery"> Battery</label>
+        <div id="batteryOptions" class="hidden sub-options">
+          <label>Adding or replacing?</label>
+          <select id="batteryAction">
+            <option value="">Select</option>
+            <option value="adding">Adding</option>
+            <option value="replacing">Replacing</option>
+          </select>
+          <div id="batteryAddOptions" class="hidden sub-options">
+            <label><input type="checkbox"> DC-coupled battery</label>
+            <label>AC battery size (kW): <input type="number"></label>
+          </div>
+          <div id="batteryReplaceOptions" class="hidden sub-options">
+            <label><input type="radio" name="batReplace" value="larger"> Larger battery</label>
+            <input type="number" placeholder="New battery AC (kW)">
+            <label><input type="radio" name="batReplace" value="like"> Like-for-like</label>
+            <label><input type="radio" name="batReplace" value="warranty"> Warranty replacement</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- EV Charger -->
+      <div class="form-group">
+        <label><input type="checkbox" id="chkEV"> EV Charger</label>
+        <div id="evOptions" class="hidden sub-options">
+          <label>Adding or replacing?</label>
+          <select id="evAction">
+            <option value="">Select</option>
+            <option value="adding">Adding</option>
+            <option value="replacing">Replacing</option>
+          </select>
+          <div id="evAddOptions" class="hidden sub-options">
+            <label>EV Charger size (kW): <input type="number"></label>
+          </div>
+          <div id="evReplaceOptions" class="hidden sub-options">
+            <label><input type="radio" name="evReplace" value="larger"> Larger charger</label>
+            <input type="number" placeholder="New AC (kW)">
+            <label><input type="radio" name="evReplace" value="like"> Like-for-like</label>
+            <label><input type="radio" name="evReplace" value="warranty"> Warranty replacement</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Increase Only -->
+      <div class="form-group">
+        <label><input type="checkbox" id="chkExportOnly"> Export Increase Only</label>
+      </div>
+    </div>
+
+    <!-- Export Section -->
     <div class="section hidden" id="exportSection">
+      <h2>Export Details</h2>
       <label for="currentExport">Current Export (kW)</label>
-      <input type="text" id="currentExport" disabled value="0.0 kW">
+      <input type="text" id="currentExport" disabled>
 
       <label for="requestedExport">Requested Export Limit (kW)</label>
       <input type="number" id="requestedExport" step="0.1" min="0">
@@ -95,6 +170,7 @@
 
     let totalCapacity = 0;
 
+    // NMI lookup
     document.getElementById('nmi').addEventListener('input', function(e) {
       const nmi = e.target.value;
       if (nmi.length >= 10 && derrLookup[nmi]) {
@@ -106,10 +182,38 @@
         document.getElementById('currentExport').value = rec.exportLimit.toFixed(1) + " kW";
 
         document.getElementById('propertyDisplay').classList.remove('hidden');
+        document.getElementById('installSection').classList.remove('hidden');
         document.getElementById('exportSection').classList.remove('hidden');
       }
     });
 
+    // Toggle logic
+    const toggle = (chkId, targetId) => {
+      document.getElementById(chkId).addEventListener('change', e => {
+        document.getElementById(targetId).classList.toggle('hidden', !e.target.checked);
+      });
+    };
+
+    toggle('chkInverter', 'inverterOptions');
+    toggle('chkPanels', 'panelNote');
+    toggle('chkBattery', 'batteryOptions');
+    toggle('chkEV', 'evOptions');
+
+    document.getElementById('inverterAction').addEventListener('change', e => {
+      document.getElementById('inverterReplaceOptions').classList.toggle('hidden', e.target.value !== 'replacing');
+    });
+
+    document.getElementById('batteryAction').addEventListener('change', e => {
+      document.getElementById('batteryAddOptions').classList.toggle('hidden', e.target.value !== 'adding');
+      document.getElementById('batteryReplaceOptions').classList.toggle('hidden', e.target.value !== 'replacing');
+    });
+
+    document.getElementById('evAction').addEventListener('change', e => {
+      document.getElementById('evAddOptions').classList.toggle('hidden', e.target.value !== 'adding');
+      document.getElementById('evReplaceOptions').classList.toggle('hidden', e.target.value !== 'replacing');
+    });
+
+    // Validation for export
     document.getElementById('requestedExport').addEventListener('input', function () {
       const val = parseFloat(this.value);
       if (val > totalCapacity) {
