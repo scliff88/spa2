@@ -123,7 +123,7 @@
           <label>What are you doing?</label>
           <select id="batteryAction">
             <option value="">Select</option>
-            <option value="adding">Adding new battery(ies)</option>
+            <option value="adding">Adding new AC battery(ies)</option>
             <option value="like">Like-for-like / Warranty Replacement (no additional AC)</option>
             <option value="replacing">Replacing system (decommission + install)</option>
           </select>
@@ -145,6 +145,12 @@
               <input type="number" id="batteryReplaceCapacity" step="0.1" min="0">
             </label>
             <p class="note">This capacity will be added to the total.</p>
+          </div>
+
+          <!-- DC Battery Option -->
+          <div class="form-group sub-options">
+            <label><input type="checkbox" id="chkDCBattery"> Adding/Replacing DC Battery</label>
+            <p id="dcBatteryNote" class="note hidden">DC battery selected – no additional AC required.</p>
           </div>
         </div>
       </div>
@@ -268,6 +274,11 @@
       });
     });
 
+    // DC Battery toggle
+    document.getElementById('chkDCBattery').addEventListener('change', () => {
+      document.getElementById('dcBatteryNote').classList.toggle('hidden', !document.getElementById('chkDCBattery').checked);
+    });
+
     // update total
     function updateTotal() {
       let total = baseAC;
@@ -285,7 +296,7 @@
         }
       }
 
-      // Battery
+      // Battery (AC only)
       if (document.getElementById('chkBattery').checked) {
         const action = document.getElementById('batteryAction').value;
         if (action === 'adding') {
@@ -297,6 +308,7 @@
           total = (total - removed) + added;
         }
       }
+      // DC Battery checkbox does not affect total
 
       // EV
       if (document.getElementById('chkEV').checked) {
