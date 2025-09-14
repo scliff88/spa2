@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Solar Pre-Approval Application</title>
   <style>
     body {
@@ -40,8 +40,8 @@
     }
     .section { margin-top: 32px; }
     .form-group { margin-bottom: 20px; }
-    .sub-options { 
-      margin-left: 20px; margin-top: 8px; 
+    .sub-options {
+      margin-left: 20px; margin-top: 8px;
       background: #f8f9ff; padding: 15px; border-radius: 6px;
     }
     .help-text { font-size: 0.9rem; color: #666; margin-left: 4px; font-style: italic; }
@@ -66,6 +66,7 @@
       background: #ffe5e5; border: 1px solid #ff9999;
       border-radius: 6px; color: #b91c1c; font-size: 0.95rem;
     }
+    .inline-note { font-size: 0.9rem; color: #444; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -76,7 +77,7 @@
     <!-- NMI Entry -->
     <div class="form-group">
       <label for="nmi">Enter your NMI to search for your property</label>
-      <input type="text" id="nmi" placeholder="Enter your 11-character NMI">
+      <input type="text" id="nmi" placeholder="Enter your 11-character NMI" />
       <p id="nmiHint" class="help-text">Find this on your electricity bill.</p>
       <p id="nmiError" class="error hidden">NMI not found. Please check and try again.</p>
     </div>
@@ -98,84 +99,277 @@
     <div class="section hidden" id="installSection">
       <h2 class="section-header">Installation Details</h2>
 
-      <!-- Approved AC Capacity -->
+      <!-- System Size -->
       <div class="form-group">
-        <label for="approvedAC">Approved Capacity (kW)</label>
-        <input type="text" id="approvedAC" disabled style="background:#f0f0f0;">
-        <p class="help-text">Total approved AC capacity on record</p>
+        <label for="approvedAC">Current System Size (kW)</label>
+        <input type="text" id="approvedAC" disabled style="background:#f0f0f0;" />
+        <p class="help-text">Current approved AC capacity on record</p>
+      </div>
+
+      <div class="form-group">
+        <label for="proposedAC">Proposed System Size (kW)</label>
+        <input type="text" id="proposedAC" disabled style="background:#f0f0f0;" />
+        <p class="help-text">Calculated from your add/replace selections below</p>
       </div>
 
       <!-- Backstop -->
       <div class="backstop-warning">
-        <strong>Victoria’s Emergency Backstop</strong><br>
-        0–30kVA: Internet device required<br>
-        31–200kVA: Internet or GMM<br>
+        <strong>Victoria’s Emergency Backstop</strong><br />
+        0–30 kVA: Internet device required<br />
+        31–200 kVA: Internet or GMM<br />
         No internet: zero export
       </div>
 
       <!-- Inverters -->
-      <!-- (same inverter/battery/EV code as before, omitted for brevity) -->
+      <div class="form-group">
+        <label><input type="checkbox" id="chkInverter" /> Solar Inverters</label>
+        <div id="inverterOptions" class="hidden sub-options">
+          <label><input type="checkbox" id="chkInverterAdd" /> Adding new inverter(s)</label>
+          <div id="inverterAddOptions" class="hidden sub-options">
+            <label>Additional Capacity (kW): <input type="number" id="inverterAddCapacity" /></label>
+          </div>
 
-      <div class="total-box">Total System Capacity: <span id="totalCapacityDisplay">0.0 kW</span></div>
+          <label><input type="checkbox" id="chkInverterReplace" /> Replacing system</label>
+          <div id="inverterReplaceOptions" class="hidden sub-options">
+            <label>Removed (kW): <input type="number" id="inverterRemoveCapacity" /></label>
+            <label>Installed (kW): <input type="number" id="inverterReplaceCapacity" /></label>
+          </div>
+
+          <label><input type="checkbox" id="chkInverterLike" /> Like-for-like</label>
+          <p id="inverterLikeNote" class="help-text hidden">No extra AC capacity</p>
+        </div>
+      </div>
+
+      <!-- Battery -->
+      <div class="form-group">
+        <label><input type="checkbox" id="chkBattery" /> Battery Storage</label>
+        <div id="batteryOptions" class="hidden sub-options">
+          <label><input type="checkbox" id="chkBatteryAdd" /> Adding AC battery</label>
+          <div id="batteryAddOptions" class="hidden sub-options">
+            <label>Capacity (kW): <input type="number" id="batteryAddCapacity" /></label>
+          </div>
+
+          <label><input type="checkbox" id="chkBatteryReplace" /> Replacing battery</label>
+          <div id="batteryReplaceOptions" class="hidden sub-options">
+            <label>Removed (kW): <input type="number" id="batteryRemoveCapacity" /></label>
+            <label>Installed (kW): <input type="number" id="batteryReplaceCapacity" /></label>
+          </div>
+
+          <label><input type="checkbox" id="chkBatteryLike" /> Like-for-like</label>
+          <p id="batteryLikeNote" class="help-text hidden">No extra AC capacity</p>
+
+          <label><input type="checkbox" id="chkDCBattery" /> DC Battery</label>
+          <p id="dcBatteryNote" class="help-text hidden">No AC capacity needed</p>
+        </div>
+      </div>
+
+      <!-- EV -->
+      <div class="form-group">
+        <label><input type="checkbox" id="chkEV" /> EV Charger</label>
+        <div id="evOptions" class="hidden sub-options">
+          <label><input type="checkbox" id="chkEVAdd" /> Adding charger</label>
+          <div id="evAddOptions" class="hidden sub-options">
+            <label>Capacity (kW): <input type="number" id="evAddCapacity" /></label>
+            <div>
+              <label><input type="radio" name="evAddLoad" value="yes" /> Installer confirmed? Yes</label>
+              <label><input type="radio" name="evAddLoad" value="no" /> No</label>
+              <div id="evAddCRO" class="cro-contact hidden">Contact Customer Requests: 1800 771 434 or cru@powercor.com.au</div>
+            </div>
+          </div>
+
+          <label><input type="checkbox" id="chkEVReplace" /> Replacing charger</label>
+          <div id="evReplaceOptions" class="hidden sub-options">
+            <label>Removed (kW): <input type="number" id="evRemoveCapacity" /></label>
+            <label>Installed (kW): <input type="number" id="evReplaceCapacity" /></label>
+            <div>
+              <label><input type="radio" name="evReplaceLoad" value="yes" /> Installer confirmed? Yes</label>
+              <label><input type="radio" name="evReplaceLoad" value="no" /> No</label>
+              <div id="evReplaceCRO" class="cro-contact hidden">Contact Customer Requests: 1800 771 434 or cru@powercor.com.au</div>
+            </div>
+          </div>
+
+          <label><input type="checkbox" id="chkEVLike" /> Like-for-like</label>
+          <p id="evLikeNote" class="help-text hidden">No extra AC capacity</p>
+        </div>
+      </div>
+
+      <div class="total-box">
+        Total System Capacity: <span id="totalCapacityDisplay">0.0 kW</span>
+      </div>
     </div>
 
     <!-- Export -->
     <div class="section hidden" id="exportSection">
       <h2 class="section-header">Export Settings</h2>
-      <label>Current Export (kW): <input type="text" id="currentExport" disabled></label>
-      <label>Requested Export Limit (kW): 
-        <input type="number" id="requestedExport">
-        <span class="help-text">Enter the maximum total kW you’d like this site to export to the grid.</span>
+      <label>Current Export (kW): <input type="text" id="currentExport" disabled /></label>
+
+      <label>Requested Export Limit (kW)
+        <input type="number" id="requestedExport" />
+        <span class="help-text">Enter the maximum total kW you want this site to export to the grid. This is the new total export desired.</span>
       </label>
-      <p id="exportError" class="error hidden">Requested limit cannot exceed approved capacity.</p>
+      <p id="exportMaxNote" class="inline-note hidden"></p>
+      <p id="exportError" class="error hidden">Requested limit cannot exceed the Proposed System Size.</p>
     </div>
   </div>
 
-<script>
-  let baseAC = 0;
+  <script>
+    let baseAC = 0;
 
-  // Demo NMI lookup
-  document.getElementById('nmi').addEventListener('input', e => {
-    const nmi = e.target.value.trim();
-    if (nmi.length === 11) {
-      baseAC = 5.0;
-      document.getElementById('propertyAddress').textContent = "Demo Property, VIC";
-      document.getElementById('exportValue').textContent = "5.0 kW";
-      document.getElementById('expiryValue').textContent = "31/12/2026";
-      document.getElementById('phaseValue').textContent = "Single Phase";
-      document.getElementById('currentExport').value = "5.0";
-      document.getElementById('approvedAC').value = "5.0 kW";
-      document.getElementById('propertyDisplay').classList.remove('hidden');
-      document.getElementById('installSection').classList.remove('hidden');
-      document.getElementById('exportSection').classList.remove('hidden');
-      document.getElementById('nmiError').classList.add('hidden');
-      updateTotal();
-    } else {
-      document.getElementById('nmiError').classList.remove('hidden');
-      document.getElementById('propertyDisplay').classList.add('hidden');
-      document.getElementById('installSection').classList.add('hidden');
-      document.getElementById('exportSection').classList.add('hidden');
+    // Demo NMI lookup
+    document.getElementById('nmi').addEventListener('input', e => {
+      const nmi = e.target.value.trim();
+      if (nmi.length === 11) {
+        // Demo data
+        baseAC = 5.0;
+        document.getElementById('propertyAddress').textContent = "Demo Property, VIC";
+        document.getElementById('exportValue').textContent = "5.0 kW";
+        document.getElementById('expiryValue').textContent = "31/12/2026";
+        document.getElementById('phaseValue').textContent = "Single Phase";
+        document.getElementById('currentExport').value = "5.0";
+        document.getElementById('approvedAC').value = baseAC.toFixed(1) + " kW";
+
+        // Show sections
+        document.getElementById('propertyDisplay').classList.remove('hidden');
+        document.getElementById('installSection').classList.remove('hidden');
+        document.getElementById('exportSection').classList.remove('hidden');
+        document.getElementById('nmiError').classList.add('hidden');
+
+        updateTotal();
+      } else {
+        document.getElementById('nmiError').classList.remove('hidden');
+        document.getElementById('propertyDisplay').classList.add('hidden');
+        document.getElementById('installSection').classList.add('hidden');
+        document.getElementById('exportSection').classList.add('hidden');
+      }
+    });
+
+    // Toggle helpers
+    function toggleSection(chkId, targetId){
+      const show = document.getElementById(chkId).checked;
+      document.getElementById(targetId).classList.toggle('hidden', !show);
     }
-  });
-
-  // ... inverter/battery/EV toggle logic (unchanged) ...
-
-  function updateTotal(){
-    let total=baseAC;
-    // inverter/battery/ev adjustments (unchanged)
-    document.getElementById('totalCapacityDisplay').textContent=total.toFixed(1)+" kW";
-  }
-
-  // Export validation
-  document.getElementById('requestedExport').addEventListener('input',()=>{
-    const approved=parseFloat(document.getElementById('approvedAC').value)||0;
-    const requested=+document.getElementById('requestedExport').value||0;
-    if(requested>approved){
-      document.getElementById('exportError').classList.remove('hidden');
-    } else {
-      document.getElementById('exportError').classList.add('hidden');
+    function bindToggle(chkId, targetId){
+      document.getElementById(chkId).addEventListener('change', () => {
+        document.getElementById(targetId).classList.toggle('hidden', !document.getElementById(chkId).checked);
+        updateTotal();
+      });
     }
-  });
-</script>
+    function bindNote(chkId, noteId){
+      document.getElementById(chkId).addEventListener('change', () => {
+        document.getElementById(noteId).classList.toggle('hidden', !document.getElementById(chkId).checked);
+      });
+    }
+
+    // Top-level sections + recalc
+    document.getElementById('chkInverter').addEventListener('change', () => { toggleSection('chkInverter','inverterOptions'); updateTotal(); });
+    document.getElementById('chkBattery').addEventListener('change',  () => { toggleSection('chkBattery','batteryOptions');   updateTotal(); });
+    document.getElementById('chkEV').addEventListener('change',       () => { toggleSection('chkEV','evOptions');           updateTotal(); });
+
+    // Sub-option bindings
+    bindToggle('chkInverterAdd','inverterAddOptions');
+    bindToggle('chkInverterReplace','inverterReplaceOptions');
+    bindNote('chkInverterLike','inverterLikeNote');
+
+    bindToggle('chkBatteryAdd','batteryAddOptions');
+    bindToggle('chkBatteryReplace','batteryReplaceOptions');
+    bindNote('chkBatteryLike','batteryLikeNote');
+    bindNote('chkDCBattery','dcBatteryNote'); // DC battery does not change AC capacity
+
+    bindToggle('chkEVAdd','evAddOptions');
+    bindToggle('chkEVReplace','evReplaceOptions');
+    bindNote('chkEVLike','evLikeNote');
+
+    // CRO prompts for EV load confirmation
+    function wireEvLoadRadios(groupName, croId){
+      document.querySelectorAll(`input[name="${groupName}"]`).forEach(radio => {
+        radio.addEventListener('change', () => {
+          const selected = document.querySelector(`input[name="${groupName}"]:checked`);
+          const show = selected && selected.value === 'no';
+          document.getElementById(croId).classList.toggle('hidden', !show);
+        });
+      });
+    }
+    wireEvLoadRadios('evAddLoad', 'evAddCRO');
+    wireEvLoadRadios('evReplaceLoad', 'evReplaceCRO');
+
+    // Calculate Proposed System Size
+    function calcProposedAC(){
+      let total = baseAC;
+
+      // Inverter
+      if (document.getElementById('chkInverter').checked){
+        if (document.getElementById('chkInverterAdd').checked){
+          total += +document.getElementById('inverterAddCapacity').value || 0;
+        }
+        if (document.getElementById('chkInverterReplace').checked){
+          total = (total - (+document.getElementById('inverterRemoveCapacity').value || 0))
+                + (+document.getElementById('inverterReplaceCapacity').value || 0);
+        }
+        // Like-for-like note is informational only
+      }
+
+      // Battery (AC batteries affect AC capacity; DC battery does not)
+      if (document.getElementById('chkBattery').checked){
+        if (document.getElementById('chkBatteryAdd').checked){
+          total += +document.getElementById('batteryAddCapacity').value || 0;
+        }
+        if (document.getElementById('chkBatteryReplace').checked){
+          total = (total - (+document.getElementById('batteryRemoveCapacity').value || 0))
+                + (+document.getElementById('batteryReplaceCapacity').value || 0);
+        }
+      }
+
+      // EV charger contributes to site AC capacity in this demo
+      if (document.getElementById('chkEV').checked){
+        if (document.getElementById('chkEVAdd').checked){
+          total += +document.getElementById('evAddCapacity').value || 0;
+        }
+        if (document.getElementById('chkEVReplace').checked){
+          total = (total - (+document.getElementById('evRemoveCapacity').value || 0))
+                + (+document.getElementById('evReplaceCapacity').value || 0);
+        }
+      }
+
+      return Math.max(0, total);
+    }
+
+    function updateTotal(){
+      const proposed = calcProposedAC();
+
+      // Update displays
+      document.getElementById('totalCapacityDisplay').textContent = proposed.toFixed(1) + " kW";
+      document.getElementById('proposedAC').value = proposed.toFixed(1) + " kW";
+
+      // Update export max note
+      const note = document.getElementById('exportMaxNote');
+      note.textContent = `You can request up to ${proposed.toFixed(1)} kW.`;
+      note.classList.remove('hidden');
+
+      validateExport();
+    }
+
+    // Inputs that affect proposed capacity
+    [
+      'inverterAddCapacity','inverterRemoveCapacity','inverterReplaceCapacity',
+      'batteryAddCapacity','batteryRemoveCapacity','batteryReplaceCapacity',
+      'evAddCapacity','evRemoveCapacity','evReplaceCapacity'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', updateTotal);
+    });
+
+    // Export validation: requested ≤ proposed
+    function validateExport(){
+      const proposedStr = document.getElementById('proposedAC').value || "0";
+      const proposed = parseFloat(proposedStr.replace(' kW','')) || 0;
+      const requested = +document.getElementById('requestedExport').value || 0;
+
+      const over = requested > proposed;
+      document.getElementById('exportError').classList.toggle('hidden', !over);
+      return !over;
+    }
+
+    document.getElementById('requestedExport').addEventListener('input', validateExport);
+  </script>
 </body>
 </html>
