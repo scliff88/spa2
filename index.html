@@ -116,26 +116,21 @@
         </div>
       </div>
 
-      <!-- Battery -->
+      <!-- Battery (Checkbox version) -->
       <div class="form-group">
         <label><input type="checkbox" id="chkBattery"> Battery</label>
         <div id="batteryOptions" class="hidden sub-options">
-          <label>What are you doing?</label>
-          <select id="batteryAction">
-            <option value="">Select</option>
-            <option value="adding">Adding new AC battery(ies)</option>
-            <option value="like">Like-for-like / Warranty Replacement (no additional AC)</option>
-            <option value="replacing">Replacing system (decommission + install)</option>
-          </select>
 
+          <!-- Add AC Battery -->
+          <label><input type="checkbox" id="chkBatteryAdd"> Add AC Battery</label>
           <div id="batteryAddOptions" class="hidden sub-options">
             <label>Additional Battery Capacity (kW):
               <input type="number" id="batteryAddCapacity" step="0.1" min="0">
             </label>
           </div>
 
-          <p id="batteryLikeNote" class="hidden note">No additional AC capacity required.</p>
-
+          <!-- Replace AC Battery -->
+          <label><input type="checkbox" id="chkBatteryReplace"> Replace AC Battery (decommission + install)</label>
           <div id="batteryReplaceOptions" class="hidden sub-options">
             <label>Capacity Being Decommissioned (kW):
               <input type="number" id="batteryRemoveCapacity" step="0.1" min="0">
@@ -147,11 +142,13 @@
             <p class="note">This capacity will be added to the total.</p>
           </div>
 
-          <!-- DC Battery Option -->
-          <div class="form-group sub-options">
-            <label><input type="checkbox" id="chkDCBattery"> Adding/Replacing DC Battery</label>
-            <p id="dcBatteryNote" class="note hidden">DC battery selected – no additional AC required.</p>
-          </div>
+          <!-- Like-for-like -->
+          <label><input type="checkbox" id="chkBatteryLike"> Like-for-like / Warranty Replacement</label>
+          <p id="batteryLikeNote" class="note hidden">No additional AC capacity required.</p>
+
+          <!-- DC Battery -->
+          <label><input type="checkbox" id="chkDCBattery"> Add/Replace DC Battery</label>
+          <p id="dcBatteryNote" class="note hidden">DC battery selected – no additional AC required.</p>
         </div>
       </div>
 
@@ -252,34 +249,53 @@
       }
     });
 
-    // show/hide options
+    // Inverter toggles
     function handleAction(prefix, action) {
       document.getElementById(prefix + "AddOptions").classList.add("hidden");
       document.getElementById(prefix + "ReplaceOptions").classList.add("hidden");
       document.getElementById(prefix + "LikeNote").classList.add("hidden");
-
       if (action === "adding") document.getElementById(prefix + "AddOptions").classList.remove("hidden");
       if (action === "replacing") document.getElementById(prefix + "ReplaceOptions").classList.remove("hidden");
       if (action === "like") document.getElementById(prefix + "LikeNote").classList.remove("hidden");
     }
-
-    // checkbox toggles
-    ['Inverter','Battery','EV'].forEach(item => {
-      document.getElementById('chk' + item).addEventListener('change', () => {
-        document.getElementById(item.toLowerCase() + 'Options').classList.toggle('hidden', !document.getElementById('chk' + item).checked);
-        updateTotal();
-      });
-      document.getElementById(item.toLowerCase() + 'Action').addEventListener('change', e => {
-        handleAction(item.toLowerCase(), e.target.value); updateTotal();
-      });
+    document.getElementById('chkInverter').addEventListener('change', () => {
+      document.getElementById('inverterOptions').classList.toggle('hidden', !document.getElementById('chkInverter').checked);
+      updateTotal();
+    });
+    document.getElementById('inverterAction').addEventListener('change', e => {
+      handleAction("inverter", e.target.value); updateTotal();
     });
 
-    // DC Battery toggle
+    // Battery toggles
+    document.getElementById('chkBattery').addEventListener('change', () => {
+      document.getElementById('batteryOptions').classList.toggle('hidden', !document.getElementById('chkBattery').checked);
+      updateTotal();
+    });
+    document.getElementById('chkBatteryAdd').addEventListener('change', () => {
+      document.getElementById('batteryAddOptions').classList.toggle('hidden', !document.getElementById('chkBatteryAdd').checked);
+      updateTotal();
+    });
+    document.getElementById('chkBatteryReplace').addEventListener('change', () => {
+      document.getElementById('batteryReplaceOptions').classList.toggle('hidden', !document.getElementById('chkBatteryReplace').checked);
+      updateTotal();
+    });
+    document.getElementById('chkBatteryLike').addEventListener('change', () => {
+      document.getElementById('batteryLikeNote').classList.toggle('hidden', !document.getElementById('chkBatteryLike').checked);
+    });
     document.getElementById('chkDCBattery').addEventListener('change', () => {
       document.getElementById('dcBatteryNote').classList.toggle('hidden', !document.getElementById('chkDCBattery').checked);
     });
 
-    // update total
+    // EV toggles
+    document.getElementById('chkEV').addEventListener('change', () => {
+      document.getElementById('evOptions').classList.toggle('hidden', !document.getElementById('chkEV').checked);
+      updateTotal();
+    });
+    document.getElementById('evAction').addEventListener('change', e => {
+      handleAction("ev", e.target.value); updateTotal();
+    });
+
+    // Update total
     function updateTotal() {
       let total = baseAC;
 
@@ -296,19 +312,18 @@
         }
       }
 
-      // Battery (AC only)
+      // Battery (checkbox version)
       if (document.getElementById('chkBattery').checked) {
-        const action = document.getElementById('batteryAction').value;
-        if (action === 'adding') {
+        if (document.getElementById('chkBatteryAdd').checked) {
           total += parseFloat(document.getElementById('batteryAddCapacity').value) || 0;
         }
-        if (action === 'replacing') {
+        if (document.getElementById('chkBatteryReplace').checked) {
           let removed = parseFloat(document.getElementById('batteryRemoveCapacity').value) || 0;
           let added = parseFloat(document.getElementById('batteryReplaceCapacity').value) || 0;
           total = (total - removed) + added;
         }
+        // Like + DC don’t change total
       }
-      // DC Battery checkbox does not affect total
 
       // EV
       if (document.getElementById('chkEV').checked) {
