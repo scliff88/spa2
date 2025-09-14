@@ -22,9 +22,9 @@
     }
     h1, h2, h3, p { margin: 0 0 16px; }
     h1 { font-size: 1.8rem; }
-    label { font-weight: 600; display: block; margin: 16px 0 8px; }
-    input[type="text"], input[type="number"], select {
-      width: 100%; padding: 12px; border-radius: 8px;
+    label { font-weight: 600; display: block; margin: 12px 0 6px; }
+    input[type="text"], input[type="number"] {
+      width: 100%; padding: 10px; border-radius: 6px;
       border: 1px solid #ccc; font-size: 1rem;
     }
     .hidden { display: none; }
@@ -33,9 +33,9 @@
       padding: 16px; border-radius: 8px; margin-bottom: 16px;
     }
     .section { margin-top: 32px; }
-    .form-group { margin-bottom: 24px; }
+    .form-group { margin-bottom: 20px; }
     .sub-options { margin-left: 20px; margin-top: 8px; }
-    .note { font-size: 0.9rem; color: #555; margin-left: 24px; margin-top: -8px; }
+    .note { font-size: 0.9rem; color: #555; margin-left: 24px; margin-top: -6px; }
     .total-box {
       background: #f0f4ff;
       border: 1px solid #ccd;
@@ -83,23 +83,18 @@
         <p class="note">This is the current system size from DER Registration.</p>
       </div>
 
-      <!-- Inverter (dropdown for now) -->
+      <!-- Inverter -->
       <div class="form-group">
         <label><input type="checkbox" id="chkInverter"> Inverter</label>
         <div id="inverterOptions" class="hidden sub-options">
-          <label>What are you doing?</label>
-          <select id="inverterAction">
-            <option value="">Select</option>
-            <option value="adding">Adding new inverter(s)</option>
-            <option value="like">Like-for-like / Warranty Replacement</option>
-            <option value="replacing">Replacing system (decommission + install)</option>
-          </select>
+          <label><input type="checkbox" id="chkInverterAdd"> Add Inverter</label>
           <div id="inverterAddOptions" class="hidden sub-options">
             <label>Additional Inverter Capacity (kW):
               <input type="number" id="inverterAddCapacity" step="0.1" min="0">
             </label>
           </div>
-          <p id="inverterLikeNote" class="hidden note">No additional AC capacity required.</p>
+
+          <label><input type="checkbox" id="chkInverterReplace"> Replace Inverter (decommission + install)</label>
           <div id="inverterReplaceOptions" class="hidden sub-options">
             <label>Capacity Being Decommissioned (kW):
               <input type="number" id="inverterRemoveCapacity" step="0.1" min="0">
@@ -110,14 +105,16 @@
             </label>
             <p class="note">This capacity will be added to the total.</p>
           </div>
+
+          <label><input type="checkbox" id="chkInverterLike"> Like-for-like / Warranty Replacement</label>
+          <p id="inverterLikeNote" class="note hidden">No additional AC capacity required.</p>
         </div>
       </div>
 
-      <!-- Battery (checkbox version) -->
+      <!-- Battery -->
       <div class="form-group">
         <label><input type="checkbox" id="chkBattery"> Battery</label>
         <div id="batteryOptions" class="hidden sub-options">
-
           <label><input type="checkbox" id="chkBatteryAdd"> Add AC Battery</label>
           <div id="batteryAddOptions" class="hidden sub-options">
             <label>Additional Battery Capacity (kW):
@@ -145,23 +142,18 @@
         </div>
       </div>
 
-      <!-- EV (dropdown for now) -->
+      <!-- EV -->
       <div class="form-group">
         <label><input type="checkbox" id="chkEV"> EV Charger</label>
         <div id="evOptions" class="hidden sub-options">
-          <label>What are you doing?</label>
-          <select id="evAction">
-            <option value="">Select</option>
-            <option value="adding">Adding new charger(s)</option>
-            <option value="like">Like-for-like / Warranty Replacement</option>
-            <option value="replacing">Replacing system (decommission + install)</option>
-          </select>
+          <label><input type="checkbox" id="chkEVAdd"> Add EV Charger</label>
           <div id="evAddOptions" class="hidden sub-options">
             <label>Additional EV Charger Capacity (kW):
               <input type="number" id="evAddCapacity" step="0.1" min="0">
             </label>
           </div>
-          <p id="evLikeNote" class="hidden note">No additional AC capacity required.</p>
+
+          <label><input type="checkbox" id="chkEVReplace"> Replace EV Charger (decommission + install)</label>
           <div id="evReplaceOptions" class="hidden sub-options">
             <label>Capacity Being Decommissioned (kW):
               <input type="number" id="evRemoveCapacity" step="0.1" min="0">
@@ -172,6 +164,9 @@
             </label>
             <p class="note">This capacity will be added to the total.</p>
           </div>
+
+          <label><input type="checkbox" id="chkEVLike"> Like-for-like / Warranty Replacement</label>
+          <p id="evLikeNote" class="note hidden">No additional AC capacity required.</p>
         </div>
       </div>
 
@@ -192,14 +187,14 @@
   </div>
 
   <script>
-    // NMI Lookup
     const derrLookup = {
-      '1234567891': { address:'27 Rooftop Crescent, Sunshine VIC 3020', exportLimit:5.0, acCapacity:5.0, phase:'Single Phase', expiry:'15/12/2025' },
-      '6201601234': { address:'88 Energy Way, Fitzroy North VIC 3068', exportLimit:3.5, acCapacity:6.0, phase:'Three Phase', expiry:'22/07/2026' }
+      '1234567891': {address:'27 Rooftop Crescent, Sunshine VIC 3020', exportLimit:5.0, acCapacity:5.0, phase:'Single Phase', expiry:'15/12/2025'},
+      '6201601234': {address:'88 Energy Way, Fitzroy North VIC 3068', exportLimit:3.5, acCapacity:6.0, phase:'Three Phase', expiry:'22/07/2026'}
     };
     let baseAC=0;
 
-    document.getElementById('nmi').addEventListener('input', e=>{
+    // NMI lookup
+    document.getElementById('nmi').addEventListener('input',e=>{
       const nmi=e.target.value.trim();
       if(nmi.length>=10){
         if(derrLookup[nmi]){
@@ -223,28 +218,32 @@
       }
     });
 
-    // Inverter dropdown logic
-    function handleAction(prefix, action){
-      document.getElementById(prefix+"AddOptions").classList.add("hidden");
-      document.getElementById(prefix+"ReplaceOptions").classList.add("hidden");
-      document.getElementById(prefix+"LikeNote").classList.add("hidden");
-      if(action==="adding") document.getElementById(prefix+"AddOptions").classList.remove("hidden");
-      if(action==="replacing") document.getElementById(prefix+"ReplaceOptions").classList.remove("hidden");
-      if(action==="like") document.getElementById(prefix+"LikeNote").classList.remove("hidden");
-    }
-    document.getElementById('chkInverter').addEventListener('change',()=>{document.getElementById('inverterOptions').classList.toggle('hidden',!document.getElementById('chkInverter').checked);updateTotal();});
-    document.getElementById('inverterAction').addEventListener('change',e=>{handleAction("inverter",e.target.value);updateTotal();});
+    // Section toggles
+    function toggleSection(chkId, sectionId){document.getElementById(sectionId).classList.toggle('hidden',!document.getElementById(chkId).checked);}
 
-    // Battery checkbox logic
-    document.getElementById('chkBattery').addEventListener('change',()=>{document.getElementById('batteryOptions').classList.toggle('hidden',!document.getElementById('chkBattery').checked);updateTotal();});
-    document.getElementById('chkBatteryAdd').addEventListener('change',()=>{document.getElementById('batteryAddOptions').classList.toggle('hidden',!document.getElementById('chkBatteryAdd').checked);updateTotal();});
-    document.getElementById('chkBatteryReplace').addEventListener('change',()=>{document.getElementById('batteryReplaceOptions').classList.toggle('hidden',!document.getElementById('chkBatteryReplace').checked);updateTotal();});
-    document.getElementById('chkBatteryLike').addEventListener('change',()=>{document.getElementById('batteryLikeNote').classList.toggle('hidden',!document.getElementById('chkBatteryLike').checked);});
-    document.getElementById('chkDCBattery').addEventListener('change',()=>{document.getElementById('dcBatteryNote').classList.toggle('hidden',!document.getElementById('chkDCBattery').checked);});
+    document.getElementById('chkInverter').addEventListener('change',()=>toggleSection('chkInverter','inverterOptions'));
+    document.getElementById('chkBattery').addEventListener('change',()=>toggleSection('chkBattery','batteryOptions'));
+    document.getElementById('chkEV').addEventListener('change',()=>toggleSection('chkEV','evOptions'));
 
-    // EV dropdown logic
-    document.getElementById('chkEV').addEventListener('change',()=>{document.getElementById('evOptions').classList.toggle('hidden',!document.getElementById('chkEV').checked);updateTotal();});
-    document.getElementById('evAction').addEventListener('change',e=>{handleAction("ev",e.target.value);updateTotal();});
+    // Show/hide sub-options
+    function bindToggle(chkId, targetId){document.getElementById(chkId).addEventListener('change',()=>{document.getElementById(targetId).classList.toggle('hidden',!document.getElementById(chkId).checked);updateTotal();});}
+    function bindNote(chkId,noteId){document.getElementById(chkId).addEventListener('change',()=>{document.getElementById(noteId).classList.toggle('hidden',!document.getElementById(chkId).checked);});}
+
+    // Inverter
+    bindToggle('chkInverterAdd','inverterAddOptions');
+    bindToggle('chkInverterReplace','inverterReplaceOptions');
+    bindNote('chkInverterLike','inverterLikeNote');
+
+    // Battery
+    bindToggle('chkBatteryAdd','batteryAddOptions');
+    bindToggle('chkBatteryReplace','batteryReplaceOptions');
+    bindNote('chkBatteryLike','batteryLikeNote');
+    bindNote('chkDCBattery','dcBatteryNote');
+
+    // EV
+    bindToggle('chkEVAdd','evAddOptions');
+    bindToggle('chkEVReplace','evReplaceOptions');
+    bindNote('chkEVLike','evLikeNote');
 
     // Update total
     function updateTotal(){
@@ -252,29 +251,26 @@
 
       // Inverter
       if(document.getElementById('chkInverter').checked){
-        const action=document.getElementById('inverterAction').value;
-        if(action==='adding'){total+=parseFloat(document.getElementById('inverterAddCapacity').value)||0;}
-        if(action==='replacing'){let removed=parseFloat(document.getElementById('inverterRemoveCapacity').value)||0;let added=parseFloat(document.getElementById('inverterReplaceCapacity').value)||0;total=(total-removed)+added;}
+        if(document.getElementById('chkInverterAdd').checked){total+=parseFloat(document.getElementById('inverterAddCapacity').value)||0;}
+        if(document.getElementById('chkInverterReplace').checked){let removed=parseFloat(document.getElementById('inverterRemoveCapacity').value)||0;let added=parseFloat(document.getElementById('inverterReplaceCapacity').value)||0;total=(total-removed)+added;}
       }
 
       // Battery
       if(document.getElementById('chkBattery').checked){
         if(document.getElementById('chkBatteryAdd').checked){total+=parseFloat(document.getElementById('batteryAddCapacity').value)||0;}
         if(document.getElementById('chkBatteryReplace').checked){let removed=parseFloat(document.getElementById('batteryRemoveCapacity').value)||0;let added=parseFloat(document.getElementById('batteryReplaceCapacity').value)||0;total=(total-removed)+added;}
-        // Like + DC no effect
       }
 
       // EV
       if(document.getElementById('chkEV').checked){
-        const action=document.getElementById('evAction').value;
-        if(action==='adding'){total+=parseFloat(document.getElementById('evAddCapacity').value)||0;}
-        if(action==='replacing'){let removed=parseFloat(document.getElementById('evRemoveCapacity').value)||0;let added=parseFloat(document.getElementById('evReplaceCapacity').value)||0;total=(total-removed)+added;}
+        if(document.getElementById('chkEVAdd').checked){total+=parseFloat(document.getElementById('evAddCapacity').value)||0;}
+        if(document.getElementById('chkEVReplace').checked){let removed=parseFloat(document.getElementById('evRemoveCapacity').value)||0;let added=parseFloat(document.getElementById('evReplaceCapacity').value)||0;total=(total-removed)+added;}
       }
 
       document.getElementById('totalCapacityDisplay').textContent=total.toFixed(1)+" kW";
     }
 
-    // watch inputs
+    // Input watchers
     ['inverterAddCapacity','inverterRemoveCapacity','inverterReplaceCapacity','batteryAddCapacity','batteryRemoveCapacity','batteryReplaceCapacity','evAddCapacity','evRemoveCapacity','evReplaceCapacity'].forEach(id=>{
       document.getElementById(id).addEventListener('input',updateTotal);
     });
