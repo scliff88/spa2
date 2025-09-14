@@ -21,188 +21,287 @@
       box-shadow: 0 12px 24px rgba(0,0,0,0.1);
     }
     h1, h2, h3, p { margin: 0 0 16px; }
-    h1 { font-size: 1.8rem; }
-    label { font-weight: 600; display: block; margin: 12px 0 6px; }
+    h1 { font-size: 1.8rem; color: #333; }
+    .subtitle { color: #666; font-size: 1.1rem; margin-bottom: 32px; }
+    label { font-weight: 600; display: block; margin: 12px 0 6px; color: #555; }
     input[type="text"], input[type="number"] {
       width: 100%; padding: 10px; border-radius: 6px;
       border: 1px solid #ccc; font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus, input[type="number"]:focus {
+      outline: none; border-color: #667eea;
     }
     .hidden { display: none; }
     .alert {
-      background: #6b46c1; color: white;
-      padding: 16px; border-radius: 8px; margin-bottom: 16px;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      color: #333;
+      padding: 20px; border-radius: 8px; margin-bottom: 16px;
     }
+    .alert h3 { color: #2d3748; margin-bottom: 8px; }
     .section { margin-top: 32px; }
     .form-group { margin-bottom: 20px; }
-    .sub-options { margin-left: 20px; margin-top: 8px; }
-    .note { font-size: 0.9rem; color: #555; margin-left: 24px; margin-top: -6px; }
+    .sub-options { 
+      margin-left: 20px; margin-top: 8px; 
+      background: #f8f9ff; padding: 15px; border-radius: 6px;
+    }
+    .help-text { 
+      font-size: 0.9rem; color: #666; 
+      margin-left: 24px; margin-top: -6px; 
+      font-style: italic;
+    }
     .total-box {
-      background: #f0f4ff;
-      border: 1px solid #ccd;
-      padding: 16px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      padding: 20px;
       border-radius: 8px;
       margin: 24px 0;
       font-weight: 600;
+      text-align: center;
+      font-size: 1.2rem;
     }
     .error { color: #b91c1c; font-size: 0.9rem; margin-top: 8px; }
+    .property-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .info-item {
+      background: rgba(255,255,255,0.7);
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #4a5568;
+      font-size: 0.9rem;
+    }
+    .info-value {
+      font-size: 1.1rem;
+      color: #2d3748;
+      margin-top: 5px;
+    }
+    .backstop-warning {
+      background: #fff3cd;
+      border-left: 5px solid #ffc107;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+      color: #856404;
+    }
+    input[type="checkbox"] {
+      margin-right: 8px;
+      transform: scale(1.2);
+    }
+    .section-header {
+      color: #667eea;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Solar Pre-Approval Application</h1>
-    <p>DER Upgrade Capacity Logic Demo</p>
+    <p class="subtitle">Step 2 of your solar success journey - get your export pre-approval before installation</p>
 
     <!-- NMI Entry -->
     <div class="form-group">
-      <label for="nmi">Enter your NMI to search for your property</label>
-      <input type="text" id="nmi" placeholder="Enter your 10-digit NMI">
-      <p id="nmiHint" style="color:#666;font-size:0.9rem;">You can find your NMI on your electricity bill.</p>
+      <label for="nmi">Please nominate the property</label>
+      <input type="text" id="nmi" placeholder="Enter your 11-character NMI">
+      <p id="nmiHint" class="help-text">If you have an 11-character National Metering Identifier (NMI), type it here. Find this on your electricity bill.</p>
       <p id="nmiError" class="error hidden">NMI not found. Please check and try again.</p>
     </div>
 
     <!-- Property & Capacity -->
     <div id="propertyDisplay" class="hidden">
       <div class="alert">
-        <h3>Property Found</h3>
+        <h3>✅ Property Found</h3>
         <p id="propertyAddress">Address will appear here</p>
-      </div>
-      <div class="alert">
-        <h3 id="exportCapacityTitle">Current Export Capacity: 0.0 kW</h3>
-        <p id="exportInfo">Details will appear here</p>
+        <div class="property-info">
+          <div class="info-item">
+            <div class="info-label">Current Solar Export Limit</div>
+            <div class="info-value" id="exportValue">0.0 kW</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Approval Valid Until</div>
+            <div class="info-value" id="expiryValue">--</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Connection Type</div>
+            <div class="info-value" id="phaseValue">--</div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Installation Details -->
     <div class="section hidden" id="installSection">
-      <h2>Installation Details</h2>
+      <h2 class="section-header">Generation Details</h2>
 
       <!-- Approved AC Capacity -->
       <div class="form-group">
-        <label for="approvedAC">Approved AC Capacity (kW)</label>
-        <input type="text" id="approvedAC" disabled value="0.0 kW">
-        <p class="note">This is the current system size from DER Registration.</p>
+        <label for="approvedAC">Current System Size from DER Registration (kW)</label>
+        <input type="text" id="approvedAC" disabled value="0.0 kW" style="background: #f0f0f0;">
+        <p class="help-text">This is your current approved AC capacity on record</p>
       </div>
 
-      <!-- Inverter -->
+      <!-- Victoria's Emergency Backstop Mechanism -->
+      <div class="backstop-warning">
+        <h3 style="margin: 0 0 10px; color: #856404;">🔒 Victoria's Emergency Backstop Mechanism</h3>
+        <p style="margin: 0; font-size: 0.9rem;">
+          <strong>0-30kVA systems:</strong> Internet-enabled communication device required as backstop mechanism.<br>
+          <strong>31-200kVA systems:</strong> Choose internet device or Generator Monitor Meter (GMM).<br>
+          <strong>No internet available:</strong> System must be setup as zero-export.
+        </p>
+      </div>
+
+      <!-- Total Inverter Details -->
       <div class="form-group">
-        <label><input type="checkbox" id="chkInverter"> Inverter</label>
+        <label><input type="checkbox" id="chkInverter"> Solar Inverters</label>
         <div id="inverterOptions" class="hidden sub-options">
-          <label><input type="checkbox" id="chkInverterAdd"> Add Inverter</label>
+          <h4 style="color: #4a5568; margin: 0 0 15px;">What are you doing with inverters?</h4>
+          
+          <label><input type="checkbox" id="chkInverterAdd"> Adding new inverter(s)</label>
           <div id="inverterAddOptions" class="hidden sub-options">
             <label>Additional Inverter Capacity (kW):
               <input type="number" id="inverterAddCapacity" step="0.1" min="0">
             </label>
+            <p class="help-text">Total AC capacity of new inverters being installed</p>
           </div>
 
-          <label><input type="checkbox" id="chkInverterReplace"> Replace Inverter (decommission + install)</label>
+          <label><input type="checkbox" id="chkInverterReplace"> Replacing system (decommission + install)</label>
           <div id="inverterReplaceOptions" class="hidden sub-options">
             <label>Capacity Being Decommissioned (kW):
               <input type="number" id="inverterRemoveCapacity" step="0.1" min="0">
             </label>
-            <p class="note">This capacity will be subtracted from the total.</p>
+            <p class="help-text">This capacity will be subtracted from the total</p>
             <label>Capacity Being Installed (kW):
               <input type="number" id="inverterReplaceCapacity" step="0.1" min="0">
             </label>
-            <p class="note">This capacity will be added to the total.</p>
+            <p class="help-text">This capacity will be added to the total</p>
           </div>
 
           <label><input type="checkbox" id="chkInverterLike"> Like-for-like / Warranty Replacement</label>
-          <p id="inverterLikeNote" class="note hidden">No additional AC capacity required.</p>
+          <p id="inverterLikeNote" class="help-text hidden">No additional AC capacity required</p>
         </div>
       </div>
 
-      <!-- Battery -->
+      <!-- Battery Storage -->
       <div class="form-group">
-        <label><input type="checkbox" id="chkBattery"> Battery</label>
+        <label><input type="checkbox" id="chkBattery"> Battery Storage</label>
         <div id="batteryOptions" class="hidden sub-options">
-          <label><input type="checkbox" id="chkBatteryAdd"> Add AC Battery</label>
+          <h4 style="color: #4a5568; margin: 0 0 15px;">What are you doing with batteries?</h4>
+          
+          <label><input type="checkbox" id="chkBatteryAdd"> Adding new AC battery(ies)</label>
           <div id="batteryAddOptions" class="hidden sub-options">
-            <label>Additional Battery Capacity (kW):
+            <label>Additional Battery AC Capacity (kW):
               <input type="number" id="batteryAddCapacity" step="0.1" min="0">
             </label>
+            <p class="help-text">AC inverter capacity of new battery system</p>
           </div>
 
-          <label><input type="checkbox" id="chkBatteryReplace"> Replace AC Battery (decommission + install)</label>
+          <label><input type="checkbox" id="chkBatteryReplace"> Replacing system (decommission + install)</label>
           <div id="batteryReplaceOptions" class="hidden sub-options">
             <label>Capacity Being Decommissioned (kW):
               <input type="number" id="batteryRemoveCapacity" step="0.1" min="0">
             </label>
-            <p class="note">This capacity will be subtracted from the total.</p>
+            <p class="help-text">This capacity will be subtracted from the total</p>
             <label>Capacity Being Installed (kW):
               <input type="number" id="batteryReplaceCapacity" step="0.1" min="0">
             </label>
-            <p class="note">This capacity will be added to the total.</p>
+            <p class="help-text">This capacity will be added to the total</p>
           </div>
 
           <label><input type="checkbox" id="chkBatteryLike"> Like-for-like / Warranty Replacement</label>
-          <p id="batteryLikeNote" class="note hidden">No additional AC capacity required.</p>
+          <p id="batteryLikeNote" class="help-text hidden">No additional AC capacity required</p>
 
-          <label><input type="checkbox" id="chkDCBattery"> Add/Replace DC Battery</label>
-          <p id="dcBatteryNote" class="note hidden">DC battery selected – no additional AC required.</p>
+          <label><input type="checkbox" id="chkDCBattery"> Adding/Replacing DC Battery</label>
+          <p id="dcBatteryNote" class="help-text hidden">DC-coupled battery - no additional AC capacity required</p>
         </div>
       </div>
 
-      <!-- EV -->
+      <!-- EV Charger -->
       <div class="form-group">
-        <label><input type="checkbox" id="chkEV"> EV Charger</label>
+        <label><input type="checkbox" id="chkEV"> Electric Vehicle Charger</label>
         <div id="evOptions" class="hidden sub-options">
-          <label><input type="checkbox" id="chkEVAdd"> Add EV Charger</label>
+          <h4 style="color: #4a5568; margin: 0 0 15px;">What are you doing with EV chargers?</h4>
+          
+          <label><input type="checkbox" id="chkEVAdd"> Adding new charger(s)</label>
           <div id="evAddOptions" class="hidden sub-options">
             <label>Additional EV Charger Capacity (kW):
               <input type="number" id="evAddCapacity" step="0.1" min="0">
             </label>
           </div>
 
-          <label><input type="checkbox" id="chkEVReplace"> Replace EV Charger (decommission + install)</label>
+          <label><input type="checkbox" id="chkEVReplace"> Replacing system (decommission + install)</label>
           <div id="evReplaceOptions" class="hidden sub-options">
             <label>Capacity Being Decommissioned (kW):
               <input type="number" id="evRemoveCapacity" step="0.1" min="0">
             </label>
-            <p class="note">This capacity will be subtracted from the total.</p>
+            <p class="help-text">This capacity will be subtracted from the total</p>
             <label>Capacity Being Installed (kW):
               <input type="number" id="evReplaceCapacity" step="0.1" min="0">
             </label>
-            <p class="note">This capacity will be added to the total.</p>
+            <p class="help-text">This capacity will be added to the total</p>
           </div>
 
           <label><input type="checkbox" id="chkEVLike"> Like-for-like / Warranty Replacement</label>
-          <p id="evLikeNote" class="note hidden">No additional AC capacity required.</p>
+          <p id="evLikeNote" class="help-text hidden">No additional AC capacity required</p>
+          
+          <div style="margin-top: 15px; padding: 10px; background: #e8f4fd; border-radius: 4px; color: #2d5aa0; font-size: 0.9rem;">
+            ℹ️ <strong>Note:</strong> Most EV chargers don't require additional AC capacity from your solar system
+          </div>
         </div>
       </div>
 
       <!-- Aggregated Total -->
       <div class="total-box">
-        Aggregated Total Capacity: <span id="totalCapacityDisplay">0.0 kW</span>
+        Total System Capacity: <span id="totalCapacityDisplay">0.0 kW</span>
       </div>
     </div>
 
     <!-- Export Section -->
     <div class="section hidden" id="exportSection">
-      <h2>Export Details</h2>
-      <label for="currentExport">Current Export (kW)</label>
-      <input type="text" id="currentExport" disabled>
-      <label for="requestedExport">Requested Export Limit (kW)</label>
-      <input type="number" id="requestedExport" step="0.1" min="0">
+      <h2 class="section-header">Export to Grid Settings</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <label for="currentExport">Current Export Limit (kW)</label>
+          <input type="text" id="currentExport" disabled style="background: #f0f0f0;">
+          <p class="help-text">What you're currently allowed to export</p>
+        </div>
+        <div>
+          <label for="requestedExport">Requested Export Limit (kW)</label>
+          <input type="number" id="requestedExport" step="0.1" min="0">
+          <p class="help-text">How much you'd like to export to the grid</p>
+        </div>
+      </div>
+      
+      <div style="margin-top: 15px; padding: 15px; background: #e8f4fd; border-radius: 8px; color: #2d5aa0;">
+        💡 <strong>Tip:</strong> Your export limit can be different from your total system capacity. We'll assess the network capacity in your area and may place limitations on exports.
+      </div>
     </div>
   </div>
 
   <script>
     const derrLookup = {
-      '1234567891': {address:'27 Rooftop Crescent, Sunshine VIC 3020', exportLimit:5.0, acCapacity:5.0, phase:'Single Phase', expiry:'15/12/2025'},
-      '6201601234': {address:'88 Energy Way, Fitzroy North VIC 3068', exportLimit:3.5, acCapacity:6.0, phase:'Three Phase', expiry:'22/07/2026'}
+      '12345678901': {address:'27 Rooftop Crescent, Sunshine VIC 3020', exportLimit:5.0, acCapacity:5.0, phase:'Single Phase', expiry:'15/12/2025'},
+      '62016012345': {address:'88 Energy Way, Fitzroy North VIC 3068', exportLimit:3.5, acCapacity:6.0, phase:'Three Phase', expiry:'22/07/2026'}
     };
     let baseAC=0;
 
     // NMI lookup
     document.getElementById('nmi').addEventListener('input',e=>{
       const nmi=e.target.value.trim();
-      if(nmi.length>=10){
+      if(nmi.length>=11){
         if(derrLookup[nmi]){
           const rec=derrLookup[nmi]; baseAC=rec.acCapacity;
           document.getElementById('propertyAddress').textContent=rec.address;
-          document.getElementById('exportCapacityTitle').textContent=`Current Export Capacity: ${rec.exportLimit.toFixed(1)} kW`;
-          document.getElementById('exportInfo').textContent=`Expires: ${rec.expiry} | Phase Limitation: ${rec.phase}`;
-          document.getElementById('currentExport').value=rec.exportLimit.toFixed(1)+" kW";
+          document.getElementById('exportValue').textContent=`${rec.exportLimit.toFixed(1)} kW`;
+          document.getElementById('expiryValue').textContent=rec.expiry;
+          document.getElementById('phaseValue').textContent=rec.phase;
+          document.getElementById('currentExport').value=rec.exportLimit.toFixed(1);
           document.getElementById('approvedAC').value=rec.acCapacity.toFixed(1)+" kW";
           document.getElementById('propertyDisplay').classList.remove('hidden');
           document.getElementById('installSection').classList.remove('hidden');
