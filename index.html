@@ -71,11 +71,11 @@
 <body>
   <div class="container">
     <h1>Solar Pre-Approval Application</h1>
-    <p class="subtitle">Step 2 of your solar success journey - get your export pre-approval before installation</p>
+    <p class="subtitle">New form logic / demo</p>
 
     <!-- NMI Entry -->
     <div class="form-group">
-      <label for="nmi">Please nominate the property</label>
+      <label for="nmi">Enter your NMI to search for your property</label>
       <input type="text" id="nmi" placeholder="Enter your 11-character NMI">
       <p id="nmiHint" class="help-text">Find this on your electricity bill.</p>
       <p id="nmiError" class="error hidden">NMI not found. Please check and try again.</p>
@@ -87,7 +87,7 @@
         <h3>✅ Property Found</h3>
         <p id="propertyAddress"></p>
         <div class="property-info">
-          <div><strong>Current Solar Export Limit</strong><div id="exportValue">0.0 kW</div></div>
+          <div><strong>Current Solar Export Approval</strong><div id="exportValue">0.0 kW</div></div>
           <div><strong>Approval Valid Until</strong><div id="expiryValue">--</div></div>
           <div><strong>Connection Type</strong><div id="phaseValue">--</div></div>
         </div>
@@ -96,7 +96,7 @@
 
     <!-- Installation Details -->
     <div class="section hidden" id="installSection">
-      <h2 class="section-header">Generation Details</h2>
+      <h2 class="section-header">Installation Details</h2>
 
       <!-- Approved AC Capacity -->
       <div class="form-group">
